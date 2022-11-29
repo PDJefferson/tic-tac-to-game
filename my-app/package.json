@@ -1,0 +1,57 @@
+{
+  "name": "my-app",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "16.8.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p $PORT",
+    "heroku-postbuild": "npm run build",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/cache": "^11.7.1",
+    "@emotion/react": "^11.10.5",
+    "@emotion/server": "^11.4.0",
+    "@emotion/styled": "^11.10.5",
+    "@mui/icons-material": "^5.2.5",
+    "@mui/lab": "^5.0.0-alpha.63",
+    "@mui/material": "^5.10.15",
+    "@mui/system": "^5.10.15",
+    "@mui/x-data-grid": "^5.0.1",
+    "@mui/x-date-pickers": "^5.0.8",
+    "bcrypt": "^5.1.0",
+    "clsx": "^1.1.1",
+    "core-js-pure": "^3.26.1",
+    "date-fns": "^2.8.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "intro.js": "^5.1.0",
+    "intro.js-react": "^0.6.0",
+    "moment": "^2.29.4",
+    "mongo-sanitize": "^1.1.0",
+    "mongodb": "^4.2.0",
+    "mongoose": "^6.0.13",
+    "next": "^13.0.3",
+    "next-auth": "^4.16.4",
+    "nextjs-progressbar": "0.0.14",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.4.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "eslint": "^7.32.0",
+    "eslint-config-next": "12.0.4",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "eslint-plugin-react": "^7.27.1",
+    "eslint-plugin-react-hooks": "^4.3.0",
+    "prettier": "^2.5.0",
+    "typescript": "4.9.3"
+  }
+}
