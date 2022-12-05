@@ -1,9 +1,7 @@
 import * as React from 'react'
 import PropTypes from 'prop-types'
 import Head from 'next/head'
-
 import CssBaseline from '@mui/material/CssBaseline'
-
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import NextNprogress from 'nextjs-progressbar'
@@ -15,6 +13,7 @@ export default function MyApp(props) {
     Component,
     pageProps: { session, ...pageProps },
   } = props
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <SessionProvider

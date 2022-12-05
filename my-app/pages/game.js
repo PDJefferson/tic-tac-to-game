@@ -12,11 +12,13 @@ import {
 import GameDifficulty from '../components/game/GameDifficulty'
 import GameStartUp from '../components/game/GameStartUp'
 import DisplayWinner from '../components/game/DisplayWinner'
+
 export default function Home() {
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
   const [winnerMessage, setWinnerMessage] = React.useState(null)
   const [turn, setTurn] = React.useState(false)
+
   let hasGameBeenSetUp =
     (modality && difficulty) ||
     (modality && modality === GAME_SETTINGS.PLAYER_VS_PLAYER)
@@ -69,7 +71,6 @@ export default function Home() {
         {winnerMessage && (
           <DisplayWinner message={winnerMessage} goBackToGame={goBackToGame} />
         )}
-
         {!modality && (
           <GameStartUp modality={modality} setModality={setModality} />
         )}
