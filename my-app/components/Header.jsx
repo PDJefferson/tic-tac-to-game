@@ -25,6 +25,7 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import Image from 'next/image'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { useTheme } from '@mui/material/styles'
+import { useState } from 'react'
 
 function DrawerAppBar() {
   const theme = useTheme()
