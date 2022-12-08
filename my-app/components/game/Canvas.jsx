@@ -12,9 +12,13 @@ export default function Canvas({
   modality,
   difficulty,
   turn,
+  roomCode,
+  socket,
   winnerFound = () => {},
 }) {
-  const [switchTurns, setSwitchTurns] = React.useState(turn)
+  const [switchTurns, setSwitchTurns] = React.useState(
+    GAME_SETTINGS.ONLINE === modality ? true : turn
+  )
   const [boardElements, setBoardElements] = React.useState([
     [undefined, undefined, undefined],
     [undefined, undefined, undefined],
@@ -33,9 +37,9 @@ export default function Canvas({
           //append computer position
           setBoardElements((boardElements) => {
             boardElements[moveToTake.i][moveToTake.j] = switchTurns ? (
-              <XComponent key={'xUser'} />
+              <XComponent key={GAME_SETTINGS.X_USER} />
             ) : (
-              <OComponent key={'oUser'} />
+              <OComponent key={GAME_SETTINGS.O_USER} />
             )
             return boardElements
           })
@@ -80,6 +84,30 @@ export default function Canvas({
     }
   }, [boardElements, checkIfWinner])
 
+
+  //listen to an update to the game from the other user
+  React.useEffect(() => {
+    socket.on('updateGame', ({ row, col }) => {
+      console.log('use Effect', row, col)
+      setBoardElements((boardElements) => {
+        boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
+        return boardElements
+      })
+      setSwitchTurns(true)
+      setCheckIfWinner(true)
+    })
+    return () => socket.off('updateGame')
+  })
+
+  //if the other user leaves then make this user win by default
+  React.useEffect(() => {
+    socket.on('onOtherUserLeaving', (flag) => {
+      winnerFound('Won by default since other user left')
+    })
+    return () => socket.off('onOtherUserLeaving')
+  })
+
+ 
   //sets the game modality
   const gameModality = (row, col) => {
     switch (modality) {
@@ -89,6 +117,9 @@ export default function Canvas({
       case GAME_SETTINGS.PLAYER_VS_PLAYER:
         playerVsPlayer(row, col)
         break
+      case GAME_SETTINGS.ONLINE:
+        online(row, col)
+        break
       default:
         alert('not such a modality')
         break
@@ -96,13 +127,11 @@ export default function Canvas({
   }
 
   const playerVsComputer = (row, col) => {
+    if (switchTurns) return
     //append users position
     setBoardElements((boardElements) => {
-      boardElements[row][col] = switchTurns ? (
-        <XComponent key={'xUser'} />
-      ) : (
-        <OComponent key={'oUser'} />
-      )
+      boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
+
       return boardElements
     })
 
@@ -115,9 +144,9 @@ export default function Canvas({
     //append item to current cell selected
     setBoardElements((boardElements) => {
       boardElements[row][col] = switchTurns ? (
-        <XComponent key={'xUser'} />
+        <XComponent key={GAME_SETTINGS.X_USER} />
       ) : (
-        <OComponent key={'oUser'} />
+        <OComponent key={GAME_SETTINGS.O_USER} />
       )
       return boardElements
     })
@@ -125,6 +154,20 @@ export default function Canvas({
     //switch turns
     setSwitchTurns(!switchTurns)
     setCheckIfWinner(true)
+  }
+
+  const online = (row, col) => {
+    if (switchTurns) {
+      //append item to current cell selected
+      setBoardElements((boardElements) => {
+        boardElements[row][col] = <XComponent key={GAME_SETTINGS.X_USER} />
+        return boardElements
+      })
+      setSwitchTurns(false)
+      setCheckIfWinner(true)
+      //emit the new changes to the dom to the user
+      socket.emit('play', { row, col, roomCode })
+    }
   }
 
   const appendXorO = (e, row, col) => {

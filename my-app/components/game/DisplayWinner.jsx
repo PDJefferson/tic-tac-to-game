@@ -1,7 +1,14 @@
 import { Typography, Button, Grid } from '@mui/material'
 import React from 'react'
+import { GAME_SETTINGS } from '../../constants/game'
 
 export default function DisplayWinner({ message, goBackToGame }) {
+  let results =
+    message === GAME_SETTINGS.O_USER
+      ? `${message} wins`
+      : message === GAME_SETTINGS.X_USER
+      ? `${message} wins`
+      : message
   return (
     <Grid>
       <Typography
@@ -14,12 +21,9 @@ export default function DisplayWinner({ message, goBackToGame }) {
         paddingBottom={2}
         marginBottom={2}
       >
-        {message}
+        {results}
       </Typography>
-      <Button
-        variant="contained"
-        onClick={() => goBackToGame()}
-      >
+      <Button variant="contained" onClick={() => goBackToGame()}>
         AGAIN
       </Button>
     </Grid>
