@@ -9,6 +9,8 @@ import { GAME_SETTINGS } from '../../constants/game'
 import minimaxAlgo from '../../utils/minimaxAlgo'
 import randomPositionNotTaken from '../../utils/randomStep'
 export default function Canvas({
+  boardElements,
+  setBoardElements,
   modality,
   difficulty,
   turn,
@@ -19,11 +21,11 @@ export default function Canvas({
   const [switchTurns, setSwitchTurns] = React.useState(
     GAME_SETTINGS.ONLINE === modality ? true : turn
   )
-  const [boardElements, setBoardElements] = React.useState([
-    [undefined, undefined, undefined],
-    [undefined, undefined, undefined],
-    [undefined, undefined, undefined],
-  ])
+  // const [boardElements, setBoardElements] = React.useState([
+  //   [undefined, undefined, undefined],
+  //   [undefined, undefined, undefined],
+  //   [undefined, undefined, undefined],
+  // ])
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
 
   React.useEffect(() => {
@@ -61,11 +63,11 @@ export default function Canvas({
       let winner = checkWinner(boardElements)
       //if a winner does exists show winner.
       if (winner) {
-        setBoardElements([
-          [undefined, undefined, undefined],
-          [undefined, undefined, undefined],
-          [undefined, undefined, undefined],
-        ])
+        // setBoardElements([
+        //   [undefined, undefined, undefined],
+        //   [undefined, undefined, undefined],
+        //   [undefined, undefined, undefined],
+        // ])
         winnerFound(winner)
         // otherwise continue the game
       } else {
@@ -83,7 +85,6 @@ export default function Canvas({
       }
     }
   }, [boardElements, checkIfWinner])
-
 
   //listen to an update to the game from the other user
   React.useEffect(() => {
@@ -107,7 +108,6 @@ export default function Canvas({
     return () => socket.off('onOtherUserLeaving')
   })
 
- 
   //sets the game modality
   const gameModality = (row, col) => {
     switch (modality) {

@@ -21,7 +21,7 @@ export default function Home() {
   const [winnerMessage, setWinnerMessage] = React.useState(null)
   const [turn, setTurn] = React.useState(false)
   const [canOnlineGameStart, setCanOnlineGameStart] = React.useState(false)
-  const [roomName, setRoomName] = React.useState(null);
+  const [roomName, setRoomName] = React.useState(null)
 
   //initializes the socket connection
   const socketInitializer = async () => {
@@ -39,16 +39,22 @@ export default function Home() {
     initializeSocket()
   }, [])
 
+  const [boardElements, setBoardElements] = React.useState([
+    [undefined, undefined, undefined],
+    [undefined, undefined, undefined],
+    [undefined, undefined, undefined],
+  ])
+
   let hasGameBeenSetUp =
     (modality && difficulty) ||
     (modality && modality === GAME_SETTINGS.PLAYER_VS_PLAYER) ||
     canOnlineGameStart
-  
+
   const afterGame = (message) => {
     setWinnerMessage(message)
   }
   const resetGame = () => {
-    socket.emit('leaveRoom', { roomCode : roomName})
+    socket.emit('leaveRoom', { roomCode: roomName })
     setModality(null)
     setDifficulty(null)
     setWinnerMessage(null)
@@ -59,11 +65,16 @@ export default function Home() {
   const goBackToGame = () => {
     setTurn(!turn)
     setWinnerMessage(null)
+    setBoardElements([
+      [undefined, undefined, undefined],
+      [undefined, undefined, undefined],
+      [undefined, undefined, undefined],
+    ])
   }
 
   const startOnlineGame = (roomCode) => {
     setRoomName(`roomJoined${roomCode}`)
-    setCanOnlineGameStart(true);
+    setCanOnlineGameStart(true)
   }
   return (
     <Grid
@@ -91,7 +102,7 @@ export default function Home() {
         sx={{ border: 5, borderRadius: 1, borderColor: 'white', padding: 5 }}
         direction="row"
         width="60%"
-        height={'520px'}
+        // height={'520px'}
         align="center"
         alignSelf={'center'}
         justifyContent="center"
@@ -101,7 +112,11 @@ export default function Home() {
           <RoomLobby socket={socket} startGame={startOnlineGame} />
         )}
         {winnerMessage && (
-          <DisplayWinner message={winnerMessage} goBackToGame={goBackToGame} />
+          <DisplayWinner
+            message={winnerMessage}
+            goBackToGame={goBackToGame}
+            sx={{}}
+          />
         )}
         {!modality && (
           <GameStartUp modality={modality} setModality={setModality} />
@@ -109,7 +124,7 @@ export default function Home() {
         {modality === GAME_SETTINGS.PLAYER_VS_COMPUTER && !difficulty && (
           <GameDifficulty setDifficulty={setDifficulty} />
         )}
-        {hasGameBeenSetUp && !winnerMessage && (
+        {hasGameBeenSetUp && (
           <Canvas
             roomCode={roomName}
             socket={socket}
@@ -117,6 +132,8 @@ export default function Home() {
             modality={modality}
             winnerFound={afterGame}
             turn={turn}
+            boardElements={boardElements}
+            setBoardElements={setBoardElements}
           />
         )}
       </Grid>
