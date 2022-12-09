@@ -28,7 +28,6 @@ export default function RoomLobby({ socket, startGame }) {
     return () => socket.off('roomFull')
   }, [socket, appendToRoom])
 
-
   const waitForOtherUser = (e) => {
     //if the backdrop is showing , that means we have already call the emit
     //event to create a room so return

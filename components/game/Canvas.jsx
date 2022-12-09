@@ -16,6 +16,7 @@ export default function Canvas({
   turn,
   roomCode,
   socket,
+  hasGameFinished,
   winnerFound = () => {},
 }) {
   const [switchTurns, setSwitchTurns] = React.useState(
@@ -27,15 +28,15 @@ export default function Canvas({
   //   [undefined, undefined, undefined],
   // ])
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
-
   React.useEffect(() => {
     let timeout
     //if the user is against a computer and is the computers turn
-    if (switchTurns && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality) {
+    if (switchTurns && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && !hasGameFinished) {
+      console.count(hasGameFinished)
       //make computer choose its position
       let moveToTake = getAlgoStepsBasedOnDifficulty(difficulty, boardElements)
       timeout = setTimeout(() => {
-        if (moveToTake) {
+        if (moveToTake && moveToTake.i !== undefined && moveToTake.j !== undefined) {
           //append computer position
           setBoardElements((boardElements) => {
             boardElements[moveToTake.i][moveToTake.j] = switchTurns ? (
@@ -54,7 +55,7 @@ export default function Canvas({
     return () => {
       clearTimeout(timeout)
     }
-  }, [switchTurns, boardElements])
+  }, [switchTurns,boardElements])
 
   React.useEffect(() => {
     //checks if there is a winner.
@@ -74,11 +75,6 @@ export default function Canvas({
         let allCellsSTaken = checkAllCellsTaken(boardElements)
         //unless all the cells get selected; that means, it is a tie.
         if (allCellsSTaken) {
-          setBoardElements([
-            [undefined, undefined, undefined],
-            [undefined, undefined, undefined],
-            [undefined, undefined, undefined],
-          ])
           //In that case show that both users tie.
           winnerFound('game resulted in a tie')
         }
@@ -171,8 +167,9 @@ export default function Canvas({
   }
 
   const appendXorO = (e, row, col) => {
+    
     //if someone has selected the cell, return
-    if (boardElements[row][col]) {
+    if (boardElements[row][col] || hasGameFinished) {
       return
     }
     gameModality(row, col)

@@ -1,20 +1,13 @@
 import Canvas from '../components/game/Canvas'
 import React from 'react'
 import { GAME_SETTINGS } from '../constants/game'
-import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  CardActions,
-  Button,
-} from '@mui/material'
-let socket
+import { Grid, Button } from '@mui/material'
 import GameDifficulty from '../components/game/GameDifficulty'
 import GameStartUp from '../components/game/GameStartUp'
 import DisplayWinner from '../components/game/DisplayWinner'
 import RoomLobby from '../components/game/RoomLobby'
 import io from 'socket.io-client'
+let socket
 export default function Home() {
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
@@ -22,6 +15,11 @@ export default function Home() {
   const [turn, setTurn] = React.useState(false)
   const [canOnlineGameStart, setCanOnlineGameStart] = React.useState(false)
   const [roomName, setRoomName] = React.useState(null)
+  const [boardElements, setBoardElements] = React.useState([
+    [undefined, undefined, undefined],
+    [undefined, undefined, undefined],
+    [undefined, undefined, undefined],
+  ])
 
   //initializes the socket connection
   const socketInitializer = async () => {
@@ -39,20 +37,10 @@ export default function Home() {
     initializeSocket()
   }, [])
 
-  const [boardElements, setBoardElements] = React.useState([
-    [undefined, undefined, undefined],
-    [undefined, undefined, undefined],
-    [undefined, undefined, undefined],
-  ])
-
-  let hasGameBeenSetUp =
-    (modality && difficulty) ||
-    (modality && modality === GAME_SETTINGS.PLAYER_VS_PLAYER) ||
-    canOnlineGameStart
-
   const afterGame = (message) => {
     setWinnerMessage(message)
   }
+
   const resetGame = () => {
     socket.emit('leaveRoom', { roomCode: roomName })
     setModality(null)
@@ -76,6 +64,11 @@ export default function Home() {
     setRoomName(`roomJoined${roomCode}`)
     setCanOnlineGameStart(true)
   }
+
+  let hasGameBeenSetUp =
+    (modality && difficulty) ||
+    (modality && modality === GAME_SETTINGS.PLAYER_VS_PLAYER) ||
+    canOnlineGameStart
   return (
     <Grid
       container
@@ -112,11 +105,7 @@ export default function Home() {
           <RoomLobby socket={socket} startGame={startOnlineGame} />
         )}
         {winnerMessage && (
-          <DisplayWinner
-            message={winnerMessage}
-            goBackToGame={goBackToGame}
-            sx={{}}
-          />
+          <DisplayWinner message={winnerMessage} goBackToGame={goBackToGame} />
         )}
         {!modality && (
           <GameStartUp modality={modality} setModality={setModality} />
@@ -133,6 +122,7 @@ export default function Home() {
             winnerFound={afterGame}
             turn={turn}
             boardElements={boardElements}
+            hasGameFinished={winnerMessage === null ? false : true}
             setBoardElements={setBoardElements}
           />
         )}
