@@ -1,5 +1,4 @@
-import { Server } from 'Socket.IO';
-
+import { Server } from 'socket.io'
 
 const SocketHandler = (req, res) => {
   if (res.socket.server.io) {
@@ -28,7 +27,7 @@ const SocketHandler = (req, res) => {
           console.log('room is full create a new room')
           socket.emit('roomFull', 'rooms is full create a new room')
           return
-        //join the user to the room since there is still some space
+          //join the user to the room since there is still some space
         } else {
           console.log('joining user to room:', roomCode)
           await socket.join(roomCode)
@@ -42,23 +41,22 @@ const SocketHandler = (req, res) => {
       })
 
       //listens to leave room which  gets trigger when a user leaves an specific room
-      socket.on('leaveRoom', ({roomCode}) => {
-        console.log("user has left room", roomCode)
-        socket.leave(roomCode);
+      socket.on('leaveRoom', ({ roomCode }) => {
+        console.log('user has left room', roomCode)
+        socket.leave(roomCode)
         console.log(socket.adapter.rooms)
         //send a message to the other user that is still in the match and tell
         //update it about the other user leaving
         socket.broadcast.to(roomCode).emit('onOtherUserLeaving', true)
       })
-      
+
       //play a move in the board
       socket.on('play', ({ row, col, roomCode }) => {
         console.log(`play at ${row} ${col} to ${roomCode}`)
         //update the other user screen
-        socket.broadcast.to(roomCode).emit('updateGame', {row, col})
+        socket.broadcast.to(roomCode).emit('updateGame', { row, col })
         console.log(socket.adapter.rooms)
       })
-
 
       //ends the connection
       socket.on('disconnect', () => {
