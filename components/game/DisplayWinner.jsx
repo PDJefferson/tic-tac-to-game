@@ -23,7 +23,7 @@ export default function DisplayWinner({ message, goBackToGame }) {
       >
         {results}
       </Typography>
-      <Button variant="contained" onClick={() => goBackToGame()}>
+      <Button variant="contained" onClick={() => goBackToGame()} sx={{ mb: 3 }}>
         AGAIN
       </Button>
     </Grid>
