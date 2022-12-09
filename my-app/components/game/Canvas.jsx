@@ -16,7 +16,9 @@ export default function Canvas({
   turn,
   roomCode,
   socket,
-  winnerFound = () => {},
+  winnerFound,
+  setWinnerFound,
+  // winnerFound = () => {},
 }) {
   const [switchTurns, setSwitchTurns] = React.useState(
     GAME_SETTINGS.ONLINE === modality ? true : turn
@@ -28,10 +30,49 @@ export default function Canvas({
   // ])
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
 
+  // React.useEffect(() => {
+  //   //checks if there is a winner.
+  //   if (checkIfWinner) {
+  //     setCheckIfWinner(false)
+  //     let winner = checkWinner(boardElements)
+  //     //if a winner does exists show winner.
+  //     if (winner) {
+
+  //       setWinnerFound(true)
+  //       // otherwise continue the game
+  //     } else {
+  //       let allCellsSTaken = checkAllCellsTaken(boardElements)
+  //       //unless all the cells get selected; that means, it is a tie.
+  //       if (allCellsSTaken) {
+
+  //         setWinnerFound(true)
+  //       }
+  //     }
+  //   }
+  // }, [boardElements, checkIfWinner])
+
   React.useEffect(() => {
+    let hold = false
+    if (checkIfWinner) {
+      setCheckIfWinner(false)
+      let winner = checkWinner(boardElements)
+      //if a winner does exists show winner.
+      hold = winner
+      if (winner) {
+        setWinnerFound(true)
+        // otherwise continue the game
+      } else {
+        let allCellsSTaken = checkAllCellsTaken(boardElements)
+        //unless all the cells get selected; that means, it is a tie.
+        if (allCellsSTaken) {
+          setWinnerFound(true)
+        }
+      }
+    }
+
     let timeout
     //if the user is against a computer and is the computers turn
-    if (switchTurns && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality) {
+    if (switchTurns && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && !hold) {
       //make computer choose its position
       let moveToTake = getAlgoStepsBasedOnDifficulty(difficulty, boardElements)
       timeout = setTimeout(() => {
@@ -55,36 +96,6 @@ export default function Canvas({
       clearTimeout(timeout)
     }
   }, [switchTurns, boardElements])
-
-  React.useEffect(() => {
-    //checks if there is a winner.
-    if (checkIfWinner) {
-      setCheckIfWinner(false)
-      let winner = checkWinner(boardElements)
-      //if a winner does exists show winner.
-      if (winner) {
-        // setBoardElements([
-        //   [undefined, undefined, undefined],
-        //   [undefined, undefined, undefined],
-        //   [undefined, undefined, undefined],
-        // ])
-        winnerFound(winner)
-        // otherwise continue the game
-      } else {
-        let allCellsSTaken = checkAllCellsTaken(boardElements)
-        //unless all the cells get selected; that means, it is a tie.
-        if (allCellsSTaken) {
-          setBoardElements([
-            [undefined, undefined, undefined],
-            [undefined, undefined, undefined],
-            [undefined, undefined, undefined],
-          ])
-          //In that case show that both users tie.
-          winnerFound('game resulted in a tie')
-        }
-      }
-    }
-  }, [boardElements, checkIfWinner])
 
   //listen to an update to the game from the other user
   React.useEffect(() => {
@@ -188,7 +199,11 @@ export default function Canvas({
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 0, 0)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 0, 0)
+            }
+          }}
           padding="0"
           margin="0"
           minWidth="150px"
@@ -208,7 +223,12 @@ export default function Canvas({
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 0, 1)}
+          // onClick={(e) => appendXorO(e, 0, 1)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 0, 1)
+            }
+          }}
           minWidth="150px"
           minHeight="150px"
         >
@@ -226,7 +246,12 @@ export default function Canvas({
           sx={{ borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 0, 2)}
+          // onClick={(e) => appendXorO(e, 0, 2)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 0, 2)
+            }
+          }}
           minWidth="150px"
           minHeight="150px"
         >
@@ -247,7 +272,12 @@ export default function Canvas({
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 1, 0)}
+          // onClick={(e) => appendXorO(e, 1, 0)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 1, 0)
+            }
+          }}
           minWidth="150px"
           minHeight="150px"
         >
@@ -265,7 +295,12 @@ export default function Canvas({
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 1, 1)}
+          // onClick={(e) => appendXorO(e, 1, 1)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 1, 1)
+            }
+          }}
           minWidth="150px"
           minHeight="150px"
         >
@@ -283,7 +318,12 @@ export default function Canvas({
           sx={{ borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 1, 2)}
+          // onClick={(e) => appendXorO(e, 1, 2)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 1, 2)
+            }
+          }}
           minWidth="150px"
           minHeight="150px"
         >
@@ -304,7 +344,12 @@ export default function Canvas({
           sx={{ borderRight: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 2, 0)}
+          // onClick={(e) => appendXorO(e, 2, 0)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 2, 0)
+            }
+          }}
           minWidth="150px"
           minHeight="150px"
         >
@@ -322,7 +367,12 @@ export default function Canvas({
           sx={{ borderRight: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 2, 1)}
+          // onClick={(e) => appendXorO(e, 2, 1)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 2, 1)
+            }
+          }}
           minWidth="150px"
           minHeight="150px"
         >
@@ -338,7 +388,12 @@ export default function Canvas({
           padding="0"
           margin="0"
           className={classes['canvas-style']}
-          onClick={(e) => appendXorO(e, 2, 2)}
+          // onClick={(e) => appendXorO(e, 2, 2)}
+          onClick={(e) => {
+            if (!winnerFound) {
+              appendXorO(e, 2, 2)
+            }
+          }}
           textAlign="center"
           minWidth="150px"
           minHeight="150px"
