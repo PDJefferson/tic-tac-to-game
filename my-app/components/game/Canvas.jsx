@@ -76,7 +76,7 @@ export default function Canvas({
       //make computer choose its position
       let moveToTake = getAlgoStepsBasedOnDifficulty(difficulty, boardElements)
       timeout = setTimeout(() => {
-        if (moveToTake) {
+        if (moveToTake && moveToTake.i !== undefined && moveToTake.j !== undefined) {
           //append computer position
           setBoardElements((boardElements) => {
             boardElements[moveToTake.i][moveToTake.j] = switchTurns ? (
