@@ -50,7 +50,6 @@ export default function Canvas({
   //     }
   //   }
   // }, [boardElements, checkIfWinner])
-
   React.useEffect(() => {
     let hold = false
     if (checkIfWinner) {
@@ -114,7 +113,8 @@ export default function Canvas({
   //if the other user leaves then make this user win by default
   React.useEffect(() => {
     socket.on('onOtherUserLeaving', (flag) => {
-      winnerFound('Won by default since other user left')
+      socket.emit('leaveRoom', { roomCode })
+      setWinnerFound(true)
     })
     return () => socket.off('onOtherUserLeaving')
   })

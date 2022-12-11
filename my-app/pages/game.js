@@ -55,6 +55,7 @@ export default function Home() {
   // const afterGame = (message) => {
   //   setWinnerMessage(message)
   // }
+
   const resetGame = () => {
     socket.emit('leaveRoom', { roomCode: roomName })
     setModality(null)
@@ -71,6 +72,13 @@ export default function Home() {
   }
 
   const goBackToGame = () => {
+    //if the game modality is online then
+    //on play again take it to the room lobby to find 
+    //someone to play with, temp solution
+    if(modality === GAME_SETTINGS.ONLINE) {
+      setCanOnlineGameStart(false)
+      socket.emit('leaveRoom', { roomCode: roomName })
+    }
     setTurn(!turn)
     // setWinnerMessage(null)
     setWinnerFound(false)
@@ -141,7 +149,7 @@ export default function Home() {
         textAlign="center"
       >
         {modality === GAME_SETTINGS.ONLINE && !canOnlineGameStart && (
-          <RoomLobby socket={socket} startGame={startOnlineGame} />
+          <RoomLobby socket={socket} startGame={startOnlineGame} resetGame={resetGame} />
         )}
         {/* {winnerMessage && (
           <DisplayWinner

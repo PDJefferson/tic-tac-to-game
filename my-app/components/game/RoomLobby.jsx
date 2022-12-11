@@ -1,18 +1,23 @@
 import React from 'react'
-import { Card, CardContent, TextField, Typography } from '@mui/material'
+import {
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+  Button,
+  Grid,
+} from '@mui/material'
 import WaitingProgress from '../WaitingProgress'
-import { useState } from 'react'
-import io, { Socket } from 'socket.io-client'
-import { useEffect } from 'react'
-let socket
-export default function RoomLobby({ socket, startGame }) {
-  const [isBackDropShown, setIsBackDropShown] = useState(false)
-  const [appendToRoom, setAppendToRoom] = useState(0)
-  
+
+export default function RoomLobby({ socket, startGame, resetGame }) {
+  const [isBackDropShown, setIsBackDropShown] = React.useState(false)
+  const [appendToRoom, setAppendToRoom] = React.useState(0)
+
   //listens to this socket event which will trigger whenever
   //a room has two users to start playing
   React.useEffect(() => {
     socket.on('startGame', (start) => {
+      console.log(start, appendToRoom)
       startGame(appendToRoom)
     })
     return () => socket.off('startGame')
@@ -20,14 +25,17 @@ export default function RoomLobby({ socket, startGame }) {
 
   //if the room is full then create a new room
   React.useEffect(() => {
-    socket.on('roomFull', (error) => {
-      console.log(error)
-      setAppendToRoom((prevState) => prevState + 1)
-      socket.emit('joinRoom', `roomJoined${appendToRoom}`)
+    socket.on('roomFull', async (prevRoom) => {
+      console.log(prevRoom.substring(10))
+      setAppendToRoom(Number(prevRoom.substring(10)) + 1)
+      await socket.emit('joinRoom', `roomJoined${appendToRoom}`)
     })
-    return () => socket.off('roomFull')
-  }, [socket, appendToRoom])
-
+    console.count(appendToRoom)
+    return () => {
+      socket.off('roomFull')
+      socket.off('joinRoom')
+    }
+  })
 
   const waitForOtherUser = (e) => {
     //if the backdrop is showing , that means we have already call the emit
