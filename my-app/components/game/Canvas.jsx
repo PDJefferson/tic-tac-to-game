@@ -8,6 +8,7 @@ import checkAllCellsTaken from '../../utils/checkCellsTaken'
 import { GAME_SETTINGS } from '../../constants/game'
 import minimaxAlgo from '../../utils/minimaxAlgo'
 import randomPositionNotTaken from '../../utils/randomStep'
+import randomizeALgoSelection from '../../utils/randomizeAlgoSelection'
 export default function Canvas({
   boardElements,
   setBoardElements,
@@ -415,8 +416,7 @@ function getAlgoStepsBasedOnDifficulty(difficulty, board) {
       return randomPositionNotTaken(board)
       break
     case GAME_SETTINGS.MEDIUM:
-      console.error('I still have not come out with an algo for this')
-      return randomPositionNotTaken(board)
+      return randomizeALgoSelection(board)
       break
     case GAME_SETTINGS.HARD:
       return minimaxAlgo(board)
