@@ -9,8 +9,7 @@ export default function RoomLobby({ socket, startGame, resetGame }) {
   //listens to this socket event which will trigger whenever
   //a room has two users to start playing
   React.useEffect(() => {
-    socket.on('startGame', (start) => {
-      console.log(start, appendToRoom)
+    socket?.on('startGame', (start) => {
       startGame(appendToRoom)
     })
     return () => socket.off('startGame')
@@ -18,12 +17,10 @@ export default function RoomLobby({ socket, startGame, resetGame }) {
 
   //if the room is full then create a new room
   React.useEffect(() => {
-    socket.on('roomFull', async (prevRoom) => {
-      console.log(prevRoom.substring(10))
+    socket?.on('roomFull', async (prevRoom) => {
       setAppendToRoom(Number(prevRoom.substring(10)) + 1)
       await socket.emit('joinRoom', `roomJoined${appendToRoom}`)
     })
-    console.count(appendToRoom)
     return () => {
       socket.off('roomFull')
       socket.off('joinRoom')
@@ -38,9 +35,20 @@ export default function RoomLobby({ socket, startGame, resetGame }) {
     setIsBackDropShown(true)
   }
 
+  const leaveRoom = () => {
+    setIsBackDropShown(false)
+    setAppendToRoom(0)
+    socket.emit('leaveRoom', { roomCode: `roomJoined${appendToRoom}` })
+  }
+
   return (
     <>
-      {isBackDropShown && <WaitingProgress />}
+      {isBackDropShown && (
+        <WaitingProgress
+          isBackDropShown={isBackDropShown}
+          setIsBackdropShown={leaveRoom}
+        />
+      )}
       <Card
         sx={{
           minWidth: 300,

@@ -1,13 +1,14 @@
-import { Server } from 'Socket.IO'
+import { Server } from 'socket.io'
 
 const SocketHandler = (req, res) => {
   if (res.socket.server.io) {
-    console.log('Socket is already running')
+    console.log('socket has already been initialized')
+    res.end()
+    return
   } else {
     console.log('Socket is initializing')
     const io = new Server(res.socket.server)
     res.socket.server.io = io
-
     //listen to any users on connection
     io.on('connection', (socket) => {
       console.log('User Connected')
@@ -38,7 +39,7 @@ const SocketHandler = (req, res) => {
               (connectedSocket) => connectedSocket === socket.id
             )
           ) {
-            console.log("user tried to join the same room twice")
+            console.log('user tried to join the same room twice')
             await socket.leave(roomCode)
           }
           console.log('joining user to room:', roomCode)
@@ -91,9 +92,10 @@ const SocketHandler = (req, res) => {
         })
       }, 9000)
     })
+    res.end()
   }
 
-  res.end()
+  
 }
 
 export default SocketHandler

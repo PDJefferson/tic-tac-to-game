@@ -22,16 +22,16 @@ export default function Canvas({
   winnerFound,
   setWinnerFound,
   setMemoizePositions,
-  setIndex,
+  setSize,
   setCurrentIndex,
   setWinnerMessage,
 }) {
+  console.count('from canvas')
   const [switchTurns, setSwitchTurns] = React.useState(
     GAME_SETTINGS.ONLINE === modality ? true : turn
   )
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
   const [curWidth, curHeight] = useWindowSize()
-  console.log(curWidth)
   React.useEffect(() => {
     let hold = false
     if (checkIfWinner) {
@@ -85,7 +85,7 @@ export default function Canvas({
             })
             return memoize
           })
-          setIndex((index) => (index = index + 1))
+          setSize((size) => (size = size + 1))
           setCurrentIndex((currentIndex) => (currentIndex = currentIndex + 1))
         }
       }, 200)
@@ -97,26 +97,31 @@ export default function Canvas({
 
   //listen to an update to the game from the other user
   React.useEffect(() => {
-    socket.on('updateGame', ({ row, col }) => {
-      console.log('use Effect', row, col)
-      setBoardElements((boardElements) => {
-        boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
-        return boardElements
+    if (modality === GAME_SETTINGS.ONLINE) {
+      socket.on('updateGame', ({ row, col }) => {
+        setBoardElements((boardElements) => {
+          boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
+          return boardElements
+        })
+        setSwitchTurns(true)
+        setCheckIfWinner(true)
       })
-      setSwitchTurns(true)
-      setCheckIfWinner(true)
-    })
-    return () => socket.off('updateGame')
+
+      return () => socket.off('updateGame')
+    }
   })
 
   //if the other user leaves then make this user win by default
   React.useEffect(() => {
-    socket.on('onOtherUserLeaving', (flag) => {
-      socket.emit('leaveRoom', { roomCode })
-      setWinnerMessage('The other user has left the game, you won!')
-      setWinnerFound(true)
-    })
-    return () => socket.off('onOtherUserLeaving')
+    if (modality === GAME_SETTINGS.ONLINE) {
+      socket.on('onOtherUserLeaving', (flag) => {
+        socket.emit('leaveRoom', { roomCode })
+        setWinnerMessage('The other user has left the game, you won!')
+        setWinnerFound(true)
+      })
+
+      return () => socket.off('onOtherUserLeaving')
+    }
   })
 
   //sets the game modality
@@ -136,7 +141,6 @@ export default function Canvas({
         break
     }
   }
-
   const playerVsComputer = (row, col) => {
     if (switchTurns) return
     //append users position
@@ -153,7 +157,7 @@ export default function Canvas({
       })
       return memoize
     })
-    setIndex((index) => (index = index + 1))
+    setSize((size) => (size = size + 1))
     setCurrentIndex((currentIndex) => (currentIndex = currentIndex + 1))
     //switch turns
     setSwitchTurns((prevState) => (prevState = true))
@@ -200,7 +204,7 @@ export default function Canvas({
 
   let responsiveNess =
     curWidth <= RESPONSIVE_LAYOUT.SM_SCREEN_WIDTH
-      ? { width: '100px', height: '120px' }
+      ? { width: '100px', height: '140px' }
       : curWidth >= RESPONSIVE_LAYOUT.LG_SCREEN_WIDTH
       ? { width: '220px', height: '260px' }
       : { width: '140px', height: '160px' }

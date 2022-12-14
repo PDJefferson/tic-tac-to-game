@@ -2,14 +2,13 @@ import Canvas from '../components/game/Canvas'
 import React from 'react'
 import { GAME_SETTINGS } from '../constants/game'
 import { Grid, Button } from '@mui/material'
-let socket
 import GameDifficulty from '../components/game/GameDifficulty'
 import GameStartUp from '../components/game/GameStartUp'
-import DisplayWinner from '../components/game/DisplayWinner'
 import RoomLobby from '../components/game/RoomLobby'
-import io from 'socket.io-client'
 import AlertSnackBar from '../components/AlertSnackBar'
 import sanitizeAfterGameMessage from '../utils/cleanWinnerMessage'
+import AppContext from '../store/AppContext'
+import { disableButtonTheme } from '../styles/muiThemeStyles'
 export default function Home() {
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
@@ -18,7 +17,7 @@ export default function Home() {
   const [roomName, setRoomName] = React.useState(null)
   const [memoizePositions, setMemoizePositions] = React.useState(new Array())
   const [currentIndex, setCurrentIndex] = React.useState(-1)
-  const [index, setIndex] = React.useState(0)
+  const [size, setSize] = React.useState(0)
   const [winnerFound, setWinnerFound] = React.useState(false)
   const [winnerMessage, setWinnerMessage] = React.useState(null)
   const [boardElements, setBoardElements] = React.useState([
@@ -26,41 +25,27 @@ export default function Home() {
     [undefined, undefined, undefined],
     [undefined, undefined, undefined],
   ])
-
-  //initializes the socket connection
-  const socketInitializer = async () => {
-    await fetch('/api/socket')
-    socket = io()
-    socket.on('connect', () => {
-      console.log('connected')
-    })
-  }
-  //starts the socket connection
-  React.useEffect(() => {
-    async function initializeSocket() {
-      socketInitializer()
-    }
-    initializeSocket()
-  }, [])
+  const { socket } = React.useContext(AppContext)
 
   let hasGameBeenSetUp =
     (modality && difficulty) ||
     (modality && modality === GAME_SETTINGS.PLAYER_VS_PLAYER) ||
     canOnlineGameStart
 
-  let sanitizeWinnerMessage = (winnerMessage) ? sanitizeAfterGameMessage(modality, winnerMessage): null;
-  // const afterGame = (message) => {
-  //   setWinnerMessage(message)
-  // }
+  let sanitizeWinnerMessage = winnerMessage
+    ? sanitizeAfterGameMessage(modality, winnerMessage)
+    : null
 
   const resetGame = () => {
-    socket.emit('leaveRoom', { roomCode: roomName })
+    if (roomName) {
+      socket.emit('leaveRoom', { roomCode: roomName })
+    }
     setModality(null)
     setDifficulty(null)
     setWinnerMessage(null)
     setMemoizePositions(new Array())
     setCurrentIndex(-1)
-    setIndex(0)
+    setSize(0)
     setCanOnlineGameStart(null)
     hasGameBeenSetUp = false
     setWinnerFound(false)
@@ -106,7 +91,7 @@ export default function Home() {
     setCurrentIndex((currentIndex) => (currentIndex = currentIndex - 1))
   }
   const nextMove = (e) => {
-    if (currentIndex === index) return
+    if (currentIndex === size) return
     setBoardElements((board) => {
       board[memoizePositions[currentIndex + 1]?.i][
         memoizePositions[currentIndex + 1]?.j
@@ -118,7 +103,10 @@ export default function Home() {
   return (
     <>
       {winnerFound && winnerMessage && (
-        <AlertSnackBar passedMessage={sanitizeWinnerMessage.message} typeMessage={sanitizeWinnerMessage.alertType} />
+        <AlertSnackBar
+          passedMessage={sanitizeWinnerMessage.message}
+          typeMessage={sanitizeWinnerMessage.alertType}
+        />
       )}
       <Grid
         container
@@ -135,7 +123,7 @@ export default function Home() {
           alignItems="center"
           justifyContent="center"
         >
-          {hasGameBeenSetUp && (
+          {(hasGameBeenSetUp || GAME_SETTINGS.ONLINE === modality) && (
             <Button
               background="white"
               onClick={(e) => resetGame()}
@@ -208,7 +196,7 @@ export default function Home() {
               setBoardElements={setBoardElements}
               setMemoizePositions={setMemoizePositions}
               setCurrentIndex={setCurrentIndex}
-              setIndex={setIndex}
+              setSize={setSize}
               setWinnerMessage={setWinnerMessage}
             />
           )}
@@ -227,6 +215,7 @@ export default function Home() {
               sx={{ margin: 5 }}
               disabled={currentIndex < 0}
               color="error"
+              theme={disableButtonTheme}
             >
               PREVIOUS MOVE
             </Button>
@@ -237,8 +226,9 @@ export default function Home() {
               onClick={(e) => nextMove(e)}
               variant="contained"
               sx={{ margin: 5 }}
-              disabled={currentIndex + 1 === index}
+              disabled={currentIndex + 1 === size}
               color="success"
+              theme={disableButtonTheme}
             >
               NEXT MOVE
             </Button>
