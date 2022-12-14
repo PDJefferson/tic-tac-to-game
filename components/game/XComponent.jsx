@@ -1,4 +1,3 @@
-import { ConstructionOutlined } from '@mui/icons-material';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import { GAME_SETTINGS } from '../../constants/game';
 import classes from '../../styles/XComponent.module.css'
