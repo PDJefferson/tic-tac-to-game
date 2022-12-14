@@ -4,11 +4,12 @@
     width: 50px;
     padding: 0;
     margin: 0;
+
   }
   
   @media (min-width: 1600px) {
     .x-component {
-      margin:  35px;
+      margin:  36px;
       height: 80px;
       width: 80px;
     }
