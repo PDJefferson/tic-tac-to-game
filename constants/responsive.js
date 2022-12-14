@@ -1,0 +1,8 @@
+export const RESPONSIVE_LAYOUT = {
+    SM_SCREEN_WIDTH : 920,
+    SM_SCREEN_HEIGHT : '600px',
+    MD_SCREEN_WIDTH : '800px',
+    MD_SCREEN_HEIGHT : '800px',
+    LG_SCREEN_WIDTH : 1600,
+    LG_SCREEN_HEIGHT : '1200px',
+}

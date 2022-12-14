@@ -7,3 +7,12 @@
   border-radius: 50%;
   display: inline-block;
 }
+
+
+@media (min-width : 1600px) {
+  .circle {
+    margin:  35px;
+    height: 80px;
+    width: 80px;
+  }
+}

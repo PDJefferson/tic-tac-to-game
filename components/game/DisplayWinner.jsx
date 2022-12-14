@@ -11,7 +11,7 @@ export default function DisplayWinner({ message, goBackToGame }) {
       : message
   return (
     <Grid>
-      <Typography
+      {/* <Typography
         sx={{ fontSize: 18 }}
         color="white"
         align="center"
@@ -22,8 +22,8 @@ export default function DisplayWinner({ message, goBackToGame }) {
         marginBottom={2}
       >
         {results}
-      </Typography>
-      <Button variant="contained" onClick={() => goBackToGame()}>
+      </Typography> */}
+      <Button variant="contained" onClick={() => goBackToGame()} sx={{ mb: 3 }}>
         AGAIN
       </Button>
     </Grid>
