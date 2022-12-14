@@ -11,7 +11,6 @@ import randomPositionNotTaken from '../../utils/randomStep'
 import randomizeALgoSelection from '../../utils/randomizeAlgoSelection'
 import { RESPONSIVE_LAYOUT } from '../../constants/responsive'
 import { useWindowSize } from '../../hooks/use-WindowsSize'
-import { width } from '@mui/system'
 export default function Canvas({
   boardElements,
   setBoardElements,
@@ -25,6 +24,7 @@ export default function Canvas({
   setMemoizePositions,
   setIndex,
   setCurrentIndex,
+  setWinnerMessage,
 }) {
   const [switchTurns, setSwitchTurns] = React.useState(
     GAME_SETTINGS.ONLINE === modality ? true : turn
@@ -40,12 +40,15 @@ export default function Canvas({
       //if a winner does exists show winner.
       hold = winner
       if (winner) {
+        setWinnerMessage(winner)
         setWinnerFound(true)
+
         // otherwise continue the game
       } else {
         let allCellsSTaken = checkAllCellsTaken(boardElements)
         //unless all the cells get selected; that means, it is a tie.
         if (allCellsSTaken) {
+          setWinnerMessage('The game resulted in a tie')
           setWinnerFound(true)
         }
       }
@@ -110,6 +113,7 @@ export default function Canvas({
   React.useEffect(() => {
     socket.on('onOtherUserLeaving', (flag) => {
       socket.emit('leaveRoom', { roomCode })
+      setWinnerMessage('The other user has left the game, you won!')
       setWinnerFound(true)
     })
     return () => socket.off('onOtherUserLeaving')

@@ -1,20 +1,15 @@
 import Canvas from '../components/game/Canvas'
 import React from 'react'
 import { GAME_SETTINGS } from '../constants/game'
-import {
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  CardActions,
-  Button,
-} from '@mui/material'
+import { Grid, Button } from '@mui/material'
 let socket
 import GameDifficulty from '../components/game/GameDifficulty'
 import GameStartUp from '../components/game/GameStartUp'
 import DisplayWinner from '../components/game/DisplayWinner'
 import RoomLobby from '../components/game/RoomLobby'
 import io from 'socket.io-client'
+import AlertSnackBar from '../components/AlertSnackBar'
+import sanitizeAfterGameMessage from '../utils/cleanWinnerMessage'
 export default function Home() {
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
@@ -24,6 +19,13 @@ export default function Home() {
   const [memoizePositions, setMemoizePositions] = React.useState(new Array())
   const [currentIndex, setCurrentIndex] = React.useState(-1)
   const [index, setIndex] = React.useState(0)
+  const [winnerFound, setWinnerFound] = React.useState(false)
+  const [winnerMessage, setWinnerMessage] = React.useState(null)
+  const [boardElements, setBoardElements] = React.useState([
+    [undefined, undefined, undefined],
+    [undefined, undefined, undefined],
+    [undefined, undefined, undefined],
+  ])
 
   //initializes the socket connection
   const socketInitializer = async () => {
@@ -41,19 +43,12 @@ export default function Home() {
     initializeSocket()
   }, [])
 
-  const [winnerFound, setWinnerFound] = React.useState(false)
-
-  const [boardElements, setBoardElements] = React.useState([
-    [undefined, undefined, undefined],
-    [undefined, undefined, undefined],
-    [undefined, undefined, undefined],
-  ])
-
   let hasGameBeenSetUp =
     (modality && difficulty) ||
     (modality && modality === GAME_SETTINGS.PLAYER_VS_PLAYER) ||
     canOnlineGameStart
 
+  let sanitizeWinnerMessage = (winnerMessage) ? sanitizeAfterGameMessage(modality, winnerMessage): null;
   // const afterGame = (message) => {
   //   setWinnerMessage(message)
   // }
@@ -62,7 +57,10 @@ export default function Home() {
     socket.emit('leaveRoom', { roomCode: roomName })
     setModality(null)
     setDifficulty(null)
-    // setWinnerMessage(null)
+    setWinnerMessage(null)
+    setMemoizePositions(new Array())
+    setCurrentIndex(-1)
+    setIndex(0)
     setCanOnlineGameStart(null)
     hasGameBeenSetUp = false
     setWinnerFound(false)
@@ -81,6 +79,8 @@ export default function Home() {
       setCanOnlineGameStart(false)
       socket.emit('leaveRoom', { roomCode: roomName })
     }
+    setWinnerMessage(null)
+    setMemoizePositions(new Array())
     setTurn(!turn)
     // setWinnerMessage(null)
     setWinnerFound(false)
@@ -97,7 +97,6 @@ export default function Home() {
   }
 
   const prevMove = (e) => {
-    console.log(currentIndex)
     setBoardElements((board) => {
       board[memoizePositions[currentIndex]?.i][
         memoizePositions[currentIndex]?.j
@@ -117,129 +116,135 @@ export default function Home() {
     setCurrentIndex((currentIndex) => (currentIndex = currentIndex + 1))
   }
   return (
-    <Grid
-      container
-      direction="column"
-      alignItems="center"
-      justifyContent="center"
-      spacing={0}
-      style={{ minHeight: '89vh' }}
-      sx={{ background: 'black', margin: 0, padding: 0 }}
-    >
+    <>
+      {winnerFound && winnerMessage && (
+        <AlertSnackBar passedMessage={sanitizeWinnerMessage.message} typeMessage={sanitizeWinnerMessage.alertType} />
+      )}
       <Grid
         container
-        direction="row"
+        direction="column"
         alignItems="center"
         justifyContent="center"
+        spacing={0}
+        style={{ minHeight: '89vh' }}
+        sx={{ background: 'black', margin: 0, padding: 0 }}
       >
-        {hasGameBeenSetUp && (
-          <Button
-            background="white"
-            onClick={(e) => resetGame()}
-            variant="contained"
-            sx={{ margin: 5 }}
-          >
-            return
-          </Button>
-        )}
-        {winnerFound && (
-          <Button
-            background="white"
-            onClick={(e) => goBackToGame()}
-            variant="contained"
-            sx={{ margin: 5 }}
-          >
-            again
-          </Button>
-        )}
-      </Grid>
-      <Grid
-        container
-        item
-        alignItems="center"
-        sx={{
-          border: 5,
-          borderRadius: 1,
-          borderColor: 'white',
-          padding: 5,
-          backgroundColor: winnerFound && 'grey',
-        }}
-        direction="row"
-        width="60%"
-        minWidth={'400px'}
-        align="center"
-        alignSelf={'center'}
-        justifyContent="center"
-        textAlign="center"
-      >
-        {modality === GAME_SETTINGS.ONLINE && !canOnlineGameStart && (
-          <RoomLobby
-            socket={socket}
-            startGame={startOnlineGame}
-            resetGame={resetGame}
-          />
-        )}
-        {/* {winnerMessage && (
+        <Grid
+          container
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+        >
+          {hasGameBeenSetUp && (
+            <Button
+              background="white"
+              onClick={(e) => resetGame()}
+              variant="contained"
+              sx={{ margin: 5 }}
+            >
+              return
+            </Button>
+          )}
+          {winnerFound && (
+            <Button
+              background="white"
+              onClick={(e) => goBackToGame()}
+              variant="contained"
+              sx={{ margin: 5 }}
+            >
+              again
+            </Button>
+          )}
+        </Grid>
+        <Grid
+          container
+          item
+          alignItems="center"
+          sx={{
+            border: 5,
+            borderRadius: 1,
+            borderColor: 'white',
+            padding: 5,
+            backgroundColor: winnerFound && 'grey',
+          }}
+          direction="row"
+          width="60%"
+          minWidth={'400px'}
+          align="center"
+          alignSelf={'center'}
+          justifyContent="center"
+          textAlign="center"
+        >
+          {modality === GAME_SETTINGS.ONLINE && !canOnlineGameStart && (
+            <RoomLobby
+              socket={socket}
+              startGame={startOnlineGame}
+              resetGame={resetGame}
+            />
+          )}
+          {/* {winnerMessage && (
           <DisplayWinner
             message={winnerMessage}
             goBackToGame={goBackToGame}
             sx={{}}
           />
         )} */}
-        {!modality && (
-          <GameStartUp modality={modality} setModality={setModality} />
-        )}
-        {modality === GAME_SETTINGS.PLAYER_VS_COMPUTER && !difficulty && (
-          <GameDifficulty setDifficulty={setDifficulty} />
-        )}
-        {hasGameBeenSetUp && (
-          <Canvas
-            roomCode={roomName}
-            socket={socket}
-            difficulty={difficulty}
-            modality={modality}
-            winnerFound={winnerFound}
-            setWinnerFound={setWinnerFound}
-            turn={turn}
-            boardElements={boardElements}
-            setBoardElements={setBoardElements}
-            setMemoizePositions={setMemoizePositions}
-            setCurrentIndex={setCurrentIndex}
-            setIndex={setIndex}
-          />
-        )}
+          {!modality && (
+            <GameStartUp modality={modality} setModality={setModality} />
+          )}
+          {modality === GAME_SETTINGS.PLAYER_VS_COMPUTER && !difficulty && (
+            <GameDifficulty setDifficulty={setDifficulty} />
+          )}
+          {hasGameBeenSetUp && (
+            <Canvas
+              roomCode={roomName}
+              socket={socket}
+              difficulty={difficulty}
+              modality={modality}
+              winnerFound={winnerFound}
+              setWinnerFound={setWinnerFound}
+              turn={turn}
+              boardElements={boardElements}
+              setBoardElements={setBoardElements}
+              setMemoizePositions={setMemoizePositions}
+              setCurrentIndex={setCurrentIndex}
+              setIndex={setIndex}
+              setWinnerMessage={setWinnerMessage}
+            />
+          )}
+        </Grid>
+        <Grid
+          container
+          direction="row"
+          alignItems="center"
+          justifyContent="center"
+        >
+          {winnerFound && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && (
+            <Button
+              backgroundColor="white"
+              onClick={(e) => prevMove(e)}
+              variant="contained"
+              sx={{ margin: 5 }}
+              disabled={currentIndex < 0}
+              color="error"
+            >
+              PREVIOUS MOVE
+            </Button>
+          )}
+          {winnerFound && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && (
+            <Button
+              backgroundColor="white"
+              onClick={(e) => nextMove(e)}
+              variant="contained"
+              sx={{ margin: 5 }}
+              disabled={currentIndex + 1 === index}
+              color="success"
+            >
+              NEXT MOVE
+            </Button>
+          )}
+        </Grid>
       </Grid>
-      <Grid
-        container
-        direction="row"
-        alignItems="center"
-        justifyContent="center"
-      >
-        {winnerFound && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && (
-          <Button
-            backgroundColor="white"
-            onClick={(e) => prevMove(e)}
-            variant="contained"
-            sx={{ margin: 5 }}
-            disabled={currentIndex < 0}
-            color="error"
-          >
-            PREVIOUS MOVE
-          </Button>
-        )}
-        {winnerFound && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && (
-          <Button
-            backgroundColor="white"
-            onClick={(e) => nextMove(e)}
-            variant="contained"
-            sx={{ margin: 5 }}
-            disabled={currentIndex + 1 === index}
-            color="success"
-          >
-            NEXT MOVE
-          </Button>
-        )}
-      </Grid>
-    </Grid>
+    </>
   )
 }

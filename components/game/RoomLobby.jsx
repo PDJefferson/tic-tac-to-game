@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  Card,
-  CardContent,
-  TextField,
-  Typography,
-  Button,
-  Grid,
-} from '@mui/material'
+import { Card, CardContent, Typography } from '@mui/material'
 import WaitingProgress from '../WaitingProgress'
 
 export default function RoomLobby({ socket, startGame, resetGame }) {
@@ -43,40 +36,43 @@ export default function RoomLobby({ socket, startGame, resetGame }) {
     if (isBackDropShown) return
     socket.emit('joinRoom', `roomJoined${appendToRoom}`)
     setIsBackDropShown(true)
-    return <WaitingProgress />
   }
+
   return (
-    <Card
-      sx={{
-        minWidth: 300,
-        maxWidth: 400,
-        minHeight: 300,
-        backgroundColor: 'gray',
-      }}
-      variant="outlined"
-    >
-      <CardContent>
-        <br></br>
-        <br></br>
-        <br></br>
-        <Typography
-          sx={{ fontSize: 18, cursor: 'pointer' }}
-          color="text.secondary"
-          align="center"
-          variant="body2"
-          marginTop={4}
-          backgroundColor="white"
-          paddingTop={2}
-          paddingBottom={2}
-          marginBottom={2}
-          onClick={(e) => waitForOtherUser(e)}
-          disabled={isBackDropShown}
-        >
-          {isBackDropShown
-            ? 'waiting for another user to join...'
-            : 'join room'}
-        </Typography>
-      </CardContent>
-    </Card>
+    <>
+      {isBackDropShown && <WaitingProgress />}
+      <Card
+        sx={{
+          minWidth: 300,
+          maxWidth: 400,
+          minHeight: 300,
+          backgroundColor: 'gray',
+        }}
+        variant="outlined"
+      >
+        <CardContent>
+          <br></br>
+          <br></br>
+          <br></br>
+          <Typography
+            sx={{ fontSize: 18, cursor: 'pointer' }}
+            color="text.secondary"
+            align="center"
+            variant="body2"
+            marginTop={4}
+            backgroundColor="white"
+            paddingTop={2}
+            paddingBottom={2}
+            marginBottom={2}
+            onClick={(e) => waitForOtherUser(e)}
+            disabled={isBackDropShown}
+          >
+            {isBackDropShown
+              ? 'waiting for another user to join...'
+              : 'join room'}
+          </Typography>
+        </CardContent>
+      </Card>
+    </>
   )
 }
