@@ -9,6 +9,9 @@ import { GAME_SETTINGS } from '../../constants/game'
 import minimaxAlgo from '../../utils/minimaxAlgo'
 import randomPositionNotTaken from '../../utils/randomStep'
 import randomizeALgoSelection from '../../utils/randomizeAlgoSelection'
+import { RESPONSIVE_LAYOUT } from '../../constants/responsive'
+import { useWindowSize } from '../../hooks/use-WindowsSize'
+import { width } from '@mui/system'
 export default function Canvas({
   boardElements,
   setBoardElements,
@@ -19,38 +22,16 @@ export default function Canvas({
   socket,
   winnerFound,
   setWinnerFound,
-  // winnerFound = () => {},
+  setMemoizePositions,
+  setIndex,
+  setCurrentIndex,
 }) {
   const [switchTurns, setSwitchTurns] = React.useState(
     GAME_SETTINGS.ONLINE === modality ? true : turn
   )
-  // const [boardElements, setBoardElements] = React.useState([
-  //   [undefined, undefined, undefined],
-  //   [undefined, undefined, undefined],
-  //   [undefined, undefined, undefined],
-  // ])
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
-
-  // React.useEffect(() => {
-  //   //checks if there is a winner.
-  //   if (checkIfWinner) {
-  //     setCheckIfWinner(false)
-  //     let winner = checkWinner(boardElements)
-  //     //if a winner does exists show winner.
-  //     if (winner) {
-
-  //       setWinnerFound(true)
-  //       // otherwise continue the game
-  //     } else {
-  //       let allCellsSTaken = checkAllCellsTaken(boardElements)
-  //       //unless all the cells get selected; that means, it is a tie.
-  //       if (allCellsSTaken) {
-
-  //         setWinnerFound(true)
-  //       }
-  //     }
-  //   }
-  // }, [boardElements, checkIfWinner])
+  const [curWidth, curHeight] = useWindowSize()
+  console.log(curWidth)
   React.useEffect(() => {
     let hold = false
     if (checkIfWinner) {
@@ -76,7 +57,11 @@ export default function Canvas({
       //make computer choose its position
       let moveToTake = getAlgoStepsBasedOnDifficulty(difficulty, boardElements)
       timeout = setTimeout(() => {
-        if (moveToTake && moveToTake.i !== undefined && moveToTake.j !== undefined) {
+        if (
+          moveToTake &&
+          moveToTake.i !== undefined &&
+          moveToTake.j !== undefined
+        ) {
           //append computer position
           setBoardElements((boardElements) => {
             boardElements[moveToTake.i][moveToTake.j] = switchTurns ? (
@@ -89,6 +74,16 @@ export default function Canvas({
           //switch turns
           setSwitchTurns((prevState) => (prevState = false))
           setCheckIfWinner((prevState) => (prevState = true))
+          setMemoizePositions((memoize) => {
+            memoize.push({
+              i: moveToTake.i,
+              j: moveToTake.j,
+              object: <XComponent key={GAME_SETTINGS.X_USER} />,
+            })
+            return memoize
+          })
+          setIndex((index) => (index = index + 1))
+          setCurrentIndex((currentIndex) => (currentIndex = currentIndex + 1))
         }
       }, 200)
     }
@@ -143,10 +138,19 @@ export default function Canvas({
     //append users position
     setBoardElements((boardElements) => {
       boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
-
       return boardElements
     })
 
+    setMemoizePositions((memoize) => {
+      memoize.push({
+        i: row,
+        j: col,
+        object: <OComponent key={GAME_SETTINGS.O_USER} />,
+      })
+      return memoize
+    })
+    setIndex((index) => (index = index + 1))
+    setCurrentIndex((currentIndex) => (currentIndex = currentIndex + 1))
     //switch turns
     setSwitchTurns((prevState) => (prevState = true))
     //check who wins
@@ -190,13 +194,21 @@ export default function Canvas({
     gameModality(row, col)
   }
 
+  let responsiveNess =
+    curWidth <= RESPONSIVE_LAYOUT.SM_SCREEN_WIDTH
+      ? { width: '100px', height: '120px' }
+      : curWidth >= RESPONSIVE_LAYOUT.LG_SCREEN_WIDTH
+      ? { width: '220px', height: '260px' }
+      : { width: '140px', height: '160px' }
   return (
     <>
       {/*first row*/}
       <Grid container justifyContent="center">
         <Grid
           item
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
           className={classes['canvas-style']}
@@ -207,8 +219,8 @@ export default function Canvas({
           }}
           padding="0"
           margin="0"
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>
@@ -218,7 +230,9 @@ export default function Canvas({
         </Grid>
         <Grid
           item
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           padding="0"
           margin="0"
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
@@ -230,8 +244,8 @@ export default function Canvas({
               appendXorO(e, 0, 1)
             }
           }}
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>
@@ -241,7 +255,9 @@ export default function Canvas({
         </Grid>
         <Grid
           item
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           padding="0"
           margin="0"
           sx={{ borderBottom: 2, borderColor: 'white' }}
@@ -253,8 +269,8 @@ export default function Canvas({
               appendXorO(e, 0, 2)
             }
           }}
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>
@@ -267,7 +283,9 @@ export default function Canvas({
       <Grid container justifyContent="center">
         <Grid
           item
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           padding="0"
           margin="0"
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
@@ -279,8 +297,8 @@ export default function Canvas({
               appendXorO(e, 1, 0)
             }
           }}
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>
@@ -292,9 +310,14 @@ export default function Canvas({
           item
           padding="0"
           margin="0"
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
+          alignSelf={'center'}
+          alignContent={'center'}
+          alignItems={'center'}
           className={classes['canvas-style']}
           // onClick={(e) => appendXorO(e, 1, 1)}
           onClick={(e) => {
@@ -302,8 +325,8 @@ export default function Canvas({
               appendXorO(e, 1, 1)
             }
           }}
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>
@@ -313,7 +336,9 @@ export default function Canvas({
         </Grid>
         <Grid
           item
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           padding="0"
           margin="0"
           sx={{ borderBottom: 2, borderColor: 'white' }}
@@ -325,8 +350,8 @@ export default function Canvas({
               appendXorO(e, 1, 2)
             }
           }}
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>
@@ -339,7 +364,9 @@ export default function Canvas({
       <Grid container justifyContent="center">
         <Grid
           item
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           padding="0"
           margin="0"
           sx={{ borderRight: 2, borderColor: 'white' }}
@@ -351,8 +378,8 @@ export default function Canvas({
               appendXorO(e, 2, 0)
             }
           }}
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>
@@ -362,7 +389,9 @@ export default function Canvas({
         </Grid>
         <Grid
           item
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           padding="0"
           margin="0"
           sx={{ borderRight: 2, borderColor: 'white' }}
@@ -374,8 +403,8 @@ export default function Canvas({
               appendXorO(e, 2, 1)
             }
           }}
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>
@@ -385,7 +414,9 @@ export default function Canvas({
         </Grid>
         <Grid
           item
-          xs={2}
+          sm={0}
+          md={2}
+          xl={3}
           padding="0"
           margin="0"
           className={classes['canvas-style']}
@@ -396,8 +427,8 @@ export default function Canvas({
             }
           }}
           textAlign="center"
-          minWidth="150px"
-          minHeight="150px"
+          minWidth={responsiveNess.width}
+          minHeight={responsiveNess.height}
         >
           <br></br>
           <br></br>

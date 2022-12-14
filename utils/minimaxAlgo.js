@@ -23,6 +23,7 @@ function minimax(temporaryBoard, player) {
     //if it is a tie return 0
     return { score: 0 }
   }
+  //store the current move
   let moves = []
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
@@ -41,8 +42,8 @@ function minimax(temporaryBoard, player) {
           ) : (
             <OComponent key={GAME_SETTINGS.O_USER} />
           )
-        //if it is the ai, let the user pick a random position
-        //and check what happens down that path
+        //if it is the ai, that means the ai choose its position so let the user pick a random position
+        //and recursively call the algorithm
         if (player === GAME_SETTINGS.X_USER) {
           let result = minimax(temporaryBoard, GAME_SETTINGS.O_USER)
           move.score = result.score
@@ -60,7 +61,7 @@ function minimax(temporaryBoard, player) {
   }
   //find the best scores
   let bestMove
-  //if is the ai's moves maximize or find the best possible score
+  //if it is the ai's moves maximize or find the best possible score
   //by backtracking every move from the end of the game until the start
   if (player === GAME_SETTINGS.X_USER) {
     let bestScore = -10000
@@ -71,7 +72,7 @@ function minimax(temporaryBoard, player) {
       }
     }
     //in the case of the user's move, we want to find the worst possible
-    //outcome so find the worst possible score
+    //outcome so find the minimum possible score
   } else if (player === GAME_SETTINGS.O_USER) {
     let bestScore = 10000
     for (let i = 0; i < moves.length; i++) {

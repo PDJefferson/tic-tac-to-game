@@ -18,10 +18,12 @@ import io from 'socket.io-client'
 export default function Home() {
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
-  // const [winnerMessage, setWinnerMessage] = React.useState(null)
   const [turn, setTurn] = React.useState(false)
   const [canOnlineGameStart, setCanOnlineGameStart] = React.useState(false)
   const [roomName, setRoomName] = React.useState(null)
+  const [memoizePositions, setMemoizePositions] = React.useState(new Array())
+  const [currentIndex, setCurrentIndex] = React.useState(-1)
+  const [index, setIndex] = React.useState(0)
 
   //initializes the socket connection
   const socketInitializer = async () => {
@@ -73,9 +75,9 @@ export default function Home() {
 
   const goBackToGame = () => {
     //if the game modality is online then
-    //on play again take it to the room lobby to find 
+    //on play again take it to the room lobby to find
     //someone to play with, temp solution
-    if(modality === GAME_SETTINGS.ONLINE) {
+    if (modality === GAME_SETTINGS.ONLINE) {
       setCanOnlineGameStart(false)
       socket.emit('leaveRoom', { roomCode: roomName })
     }
@@ -93,12 +95,34 @@ export default function Home() {
     setRoomName(`roomJoined${roomCode}`)
     setCanOnlineGameStart(true)
   }
+
+  const prevMove = (e) => {
+    console.log(currentIndex)
+    setBoardElements((board) => {
+      board[memoizePositions[currentIndex]?.i][
+        memoizePositions[currentIndex]?.j
+      ] = undefined
+      return board
+    })
+    setCurrentIndex((currentIndex) => (currentIndex = currentIndex - 1))
+  }
+  const nextMove = (e) => {
+    if (currentIndex === index) return
+    setBoardElements((board) => {
+      board[memoizePositions[currentIndex + 1]?.i][
+        memoizePositions[currentIndex + 1]?.j
+      ] = memoizePositions[currentIndex + 1]?.object
+      return board
+    })
+    setCurrentIndex((currentIndex) => (currentIndex = currentIndex + 1))
+  }
   return (
     <Grid
       container
       direction="column"
       alignItems="center"
       justifyContent="center"
+      spacing={0}
       style={{ minHeight: '89vh' }}
       sx={{ background: 'black', margin: 0, padding: 0 }}
     >
@@ -142,14 +166,18 @@ export default function Home() {
         }}
         direction="row"
         width="60%"
-        // height={'520px'}
+        minWidth={'400px'}
         align="center"
         alignSelf={'center'}
         justifyContent="center"
         textAlign="center"
       >
         {modality === GAME_SETTINGS.ONLINE && !canOnlineGameStart && (
-          <RoomLobby socket={socket} startGame={startOnlineGame} resetGame={resetGame} />
+          <RoomLobby
+            socket={socket}
+            startGame={startOnlineGame}
+            resetGame={resetGame}
+          />
         )}
         {/* {winnerMessage && (
           <DisplayWinner
@@ -175,7 +203,41 @@ export default function Home() {
             turn={turn}
             boardElements={boardElements}
             setBoardElements={setBoardElements}
+            setMemoizePositions={setMemoizePositions}
+            setCurrentIndex={setCurrentIndex}
+            setIndex={setIndex}
           />
+        )}
+      </Grid>
+      <Grid
+        container
+        direction="row"
+        alignItems="center"
+        justifyContent="center"
+      >
+        {winnerFound && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && (
+          <Button
+            backgroundColor="white"
+            onClick={(e) => prevMove(e)}
+            variant="contained"
+            sx={{ margin: 5 }}
+            disabled={currentIndex < 0}
+            color="error"
+          >
+            PREVIOUS MOVE
+          </Button>
+        )}
+        {winnerFound && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && (
+          <Button
+            backgroundColor="white"
+            onClick={(e) => nextMove(e)}
+            variant="contained"
+            sx={{ margin: 5 }}
+            disabled={currentIndex + 1 === index}
+            color="success"
+          >
+            NEXT MOVE
+          </Button>
         )}
       </Grid>
     </Grid>

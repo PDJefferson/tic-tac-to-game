@@ -3,7 +3,7 @@ import { Card, CardContent, Typography, Grid } from '@mui/material'
 export default function GameStartUp({ modality, setModality }) {
   return (
     <Grid container spacing={2} justifyContent="center">
-      <Grid item align="center" xs={3} md={4} sm={3}>
+      <Grid item align="center" xs={12} md={4} sm={12}>
         <Card
           sx={{
             cursor: 'pointer',
@@ -29,7 +29,7 @@ export default function GameStartUp({ modality, setModality }) {
           </CardContent>
         </Card>
       </Grid>
-      <Grid item align="center" xs={3} md={4} sm={3} alignContent="center">
+      <Grid item align="center" xs={12} md={4} sm={12} alignContent="center">
         <Card
           sx={{
             cursor: 'pointer',
@@ -55,7 +55,7 @@ export default function GameStartUp({ modality, setModality }) {
           </CardContent>
         </Card>
       </Grid>
-      <Grid item align="center" xs={3} md={4} sm={3} alignContent="center">
+      <Grid item align="center" xs={12} md={4} sm={12} alignContent="center">
         <Card
           sx={{
             cursor: 'pointer',
