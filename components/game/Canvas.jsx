@@ -26,13 +26,13 @@ export default function Canvas({
   setCurrentIndex,
   setWinnerMessage,
 }) {
-  console.count('from canvas')
   const [switchTurns, setSwitchTurns] = React.useState(
     GAME_SETTINGS.ONLINE === modality ? true : turn
   )
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
   const [curWidth, curHeight] = useWindowSize()
   React.useEffect(() => {
+    console.count('from canvas')
     let hold = false
     if (checkIfWinner) {
       setCheckIfWinner(false)
@@ -106,7 +106,6 @@ export default function Canvas({
         setSwitchTurns(true)
         setCheckIfWinner(true)
       })
-
       return () => socket.off('updateGame')
     }
   })
@@ -119,7 +118,6 @@ export default function Canvas({
         setWinnerMessage('The other user has left the game, you won!')
         setWinnerFound(true)
       })
-
       return () => socket.off('onOtherUserLeaving')
     }
   })
@@ -204,10 +202,10 @@ export default function Canvas({
 
   let responsiveNess =
     curWidth <= RESPONSIVE_LAYOUT.SM_SCREEN_WIDTH
-      ? { width: '100px', height: '140px' }
+      ? { width: '110px', height: '170px' }
       : curWidth >= RESPONSIVE_LAYOUT.LG_SCREEN_WIDTH
       ? { width: '220px', height: '260px' }
-      : { width: '140px', height: '160px' }
+      : { width: '140px', height: '170px' }
   return (
     <>
       {/*first row*/}

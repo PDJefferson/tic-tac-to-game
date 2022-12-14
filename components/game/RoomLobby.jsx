@@ -51,8 +51,8 @@ export default function RoomLobby({ socket, startGame, resetGame }) {
       )}
       <Card
         sx={{
-          minWidth: 300,
-          maxWidth: 400,
+          minWidth: 360,
+          maxWidth: 380,
           minHeight: 300,
           backgroundColor: 'gray',
         }}
