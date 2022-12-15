@@ -53,9 +53,12 @@ export default function Canvas({
       }
     }
 
+    
     let timeout
+    
     //if the user is against a computer and is the computers turn
     if (switchTurns && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && !hold) {
+
       //make computer choose its position
       let moveToTake = getAlgoStepsBasedOnDifficulty(difficulty, boardElements)
       timeout = setTimeout(() => {

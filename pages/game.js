@@ -91,6 +91,7 @@ export default function Home() {
     setSize(0)
     setCanOnlineGameStart(null)
     hasGameBeenSetUp = false
+    sanitizeWinnerMessage = null
     setWinnerFound(false)
     setBoardElements([
       [undefined, undefined, undefined],
@@ -113,7 +114,7 @@ export default function Home() {
     setCurrentIndex(-1)
     setSize(0)
     setTurn(!turn)
-    // setWinnerMessage(null)
+    sanitizeWinnerMessage = null
     setWinnerFound(false)
     setBoardElements([
       [undefined, undefined, undefined],
