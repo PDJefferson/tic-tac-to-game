@@ -1,5 +1,5 @@
 import React from 'react'
-import { breadcrumbsClasses, Grid } from '@mui/material'
+import { Grid } from '@mui/material'
 import OComponent from './OComponent'
 import XComponent from './XComponent'
 import classes from '../../styles/Canvas.module.css'
@@ -31,6 +31,7 @@ export default function Canvas({
   )
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
   const [curWidth, curHeight] = useWindowSize()
+
   React.useEffect(() => {
     let hold = false
     if (checkIfWinner) {
@@ -52,13 +53,9 @@ export default function Canvas({
         }
       }
     }
-
-    
     let timeout
-    
     //if the user is against a computer and is the computers turn
     if (switchTurns && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && !hold) {
-
       //make computer choose its position
       let moveToTake = getAlgoStepsBasedOnDifficulty(difficulty, boardElements)
       timeout = setTimeout(() => {
@@ -164,6 +161,7 @@ export default function Canvas({
     //check who wins
     setCheckIfWinner(true)
   }
+
   const playerVsPlayer = (row, col) => {
     //append item to current cell selected
     setBoardElements((boardElements) => {
@@ -202,12 +200,16 @@ export default function Canvas({
     gameModality(row, col)
   }
 
-  let responsiveNess =
-    curWidth <= RESPONSIVE_LAYOUT.SM_SCREEN_WIDTH
-      ? { width: '110px', height: '170px' }
-      : curWidth >= RESPONSIVE_LAYOUT.LG_SCREEN_WIDTH
-      ? { width: '220px', height: '260px' }
-      : { width: '140px', height: '170px' }
+  let responsiveNess = React.useMemo(() => {
+    return curWidth <= RESPONSIVE_LAYOUT.XS_SCREEN_WIDTH
+      ? { width: '110px', height: '185px' }
+      : curWidth <= RESPONSIVE_LAYOUT.SM_SCREEN_WIDTH
+      ? { width: '130px', height: '190px' }
+      : curWidth >= RESPONSIVE_LAYOUT.XL_SCREEN_WIDTH
+      ? { width: '240px', height: '280px' }
+      : { width: '160px', height: '190px' }
+  }, [curWidth])
+
   return (
     <>
       {/*first row*/}
@@ -232,7 +234,8 @@ export default function Canvas({
         >
           <br></br>
           <br></br>
-          {boardElements[0][0]}
+          <br></br>
+          {boardElements[0][0]} 
           <br></br>
           <br></br>
         </Grid>
@@ -255,6 +258,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[0][1]}
@@ -280,6 +284,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[0][2]}
@@ -310,6 +315,7 @@ export default function Canvas({
         >
           <br></br>
           <br></br>
+          <br></br>
           {boardElements[1][0]}
           <br></br>
           <br></br>
@@ -323,7 +329,6 @@ export default function Canvas({
           xl={3}
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
-          alignSelf={'center'}
           alignContent={'center'}
           alignItems={'center'}
           className={classes['canvas-style']}
@@ -336,6 +341,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[1][1]}
@@ -361,6 +367,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[1][2]}
@@ -391,6 +398,7 @@ export default function Canvas({
         >
           <br></br>
           <br></br>
+          <br></br>
           {boardElements[2][0]}
           <br></br>
           <br></br>
@@ -416,6 +424,7 @@ export default function Canvas({
         >
           <br></br>
           <br></br>
+          <br></br>
           {boardElements[2][1]}
           <br></br>
           <br></br>
@@ -438,6 +447,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[2][2]}

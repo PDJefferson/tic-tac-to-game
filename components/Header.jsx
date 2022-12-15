@@ -159,7 +159,8 @@ function DrawerAppBar() {
           justifyContent: 'center',
         }}
       >
-        <Toolbar sx={{ marginRight: -1.3 }}>
+        {/*negative margin right causes the width to be bigger then full width previous value marginRight: -1.3*/}
+        <Toolbar sx={{ marginLeft: 1.3 }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
