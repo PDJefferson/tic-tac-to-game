@@ -10,6 +10,11 @@ import sanitizeAfterGameMessage from '../utils/cleanWinnerMessage'
 import AppContext from '../store/AppContext'
 import { disableButtonTheme } from '../styles/muiThemeStyles'
 import LeaderBoard from '../components/leaderboard/LeaderBoard'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
+import useHttp from '../hooks/use-http'
+import { updateUser } from '../routes/api/users'
+
 export default function Home() {
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
@@ -27,6 +32,21 @@ export default function Home() {
     [undefined, undefined, undefined],
   ])
   const { socket } = React.useContext(AppContext)
+  //getting the current user who has been authenticated
+  const { data: session } = useSession(AppContext)
+  const router = useRouter()
+  const [hasUserBeenUpdated, setHasUserBeenUpdated] = React.useState(false)
+  const {
+    sendRequest,
+    data: updatedData,
+    status,
+    error,
+  } = useHttp(updateUser, false)
+
+  //if the user wants to play online then make him sign in
+  if (!session && modality === GAME_SETTINGS.ONLINE) {
+    router.push('/signin')
+  }
 
   let hasGameBeenSetUp =
     (modality && difficulty) ||
@@ -37,10 +57,32 @@ export default function Home() {
     ? sanitizeAfterGameMessage(modality, winnerMessage)
     : null
 
+  //store the wins or loses
+  if (
+    session &&
+    winnerMessage &&
+    (winnerMessage === GAME_SETTINGS.X_USER ||
+      winnerMessage === GAME_SETTINGS.O_USER) &&
+    !hasUserBeenUpdated &&
+    GAME_SETTINGS.ONLINE === modality
+  ) {
+    let wins =
+      winnerMessage === GAME_SETTINGS.X_USER
+        ? session?.user23?.wins + 1
+        : session?.user23?.wins
+    let loses =
+      winnerMessage === GAME_SETTINGS.O_USER
+        ? session?.user23?.loses + 1
+        : session?.user23?.loses
+    sendRequest({ id: session.user23._id, wins, loses })
+    setHasUserBeenUpdated(true)
+  }
+
   const resetGame = () => {
     if (roomName) {
       socket.emit('leaveRoom', { roomCode: roomName })
     }
+    setHasUserBeenUpdated(false)
     setModality(null)
     setDifficulty(null)
     setWinnerMessage(null)
@@ -65,6 +107,7 @@ export default function Home() {
       setCanOnlineGameStart(false)
       socket.emit('leaveRoom', { roomCode: roomName })
     }
+    setHasUserBeenUpdated(false)
     setWinnerMessage(null)
     setMemoizePositions(new Array())
     setCurrentIndex(-1)
@@ -80,6 +123,7 @@ export default function Home() {
   }
 
   const startOnlineGame = (roomCode) => {
+    setHasUserBeenUpdated(false)
     setRoomName(`roomJoined${roomCode}`)
     setCanOnlineGameStart(true)
   }
@@ -104,7 +148,6 @@ export default function Home() {
     })
     setCurrentIndex((currentIndex) => (currentIndex = currentIndex + 1))
   }
-
   return (
     <>
       {winnerFound && winnerMessage && (
@@ -182,13 +225,15 @@ export default function Home() {
             justifyContent="center"
             textAlign="center"
           >
-            {modality === GAME_SETTINGS.ONLINE && !canOnlineGameStart && (
-              <RoomLobby
-                socket={socket}
-                startGame={startOnlineGame}
-                resetGame={resetGame}
-              />
-            )}
+            {modality === GAME_SETTINGS.ONLINE &&
+              session &&
+              !canOnlineGameStart && (
+                <RoomLobby
+                  socket={socket}
+                  startGame={startOnlineGame}
+                  resetGame={resetGame}
+                />
+              )}
             {!modality && (
               <GameStartUp modality={modality} setModality={setModality} />
             )}

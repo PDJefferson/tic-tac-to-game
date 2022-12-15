@@ -14,7 +14,7 @@ const SocketHandler = (req, res) => {
       console.log('User Connected')
       //check if a user has join a room
       socket.on('joinRoom', async (roomCode) => {
-        //get the users in this specifc room
+        //get the users in this specific room
         const connectedSockets = io.sockets.adapter.rooms.get(roomCode)
         //get all rooms
         const socketRooms = Array.from(socket.rooms.values()).filter(

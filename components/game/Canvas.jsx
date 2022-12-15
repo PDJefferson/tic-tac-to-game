@@ -32,7 +32,6 @@ export default function Canvas({
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
   const [curWidth, curHeight] = useWindowSize()
   React.useEffect(() => {
-    console.count('from canvas')
     let hold = false
     if (checkIfWinner) {
       setCheckIfWinner(false)

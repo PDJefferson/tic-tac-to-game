@@ -49,6 +49,16 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    wins: {
+      type: Number,
+      default: 0,
+      required: false
+    },
+    loses: {
+      type: Number,
+      default: 0,
+      required: false,
+    }
   },
   {
     toJSON: { virtuals: true },

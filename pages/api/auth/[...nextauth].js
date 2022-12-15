@@ -42,6 +42,8 @@ export default NextAuth({
             acceptLanguage: profile.locale,
             emailVerified: profile.email_verified,
             image: profile.picture,
+            wins: profile?.wins,
+            loses: profile?.loses,
           }).catch((e) => {
             throw new Error('Something has gone wrong ...')
           })
