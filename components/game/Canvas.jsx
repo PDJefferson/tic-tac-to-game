@@ -6,11 +6,14 @@ import classes from '../../styles/Canvas.module.css'
 import checkWinner from '../../utils/winnerLogic.js'
 import checkAllCellsTaken from '../../utils/checkCellsTaken'
 import { GAME_SETTINGS } from '../../constants/game'
+import AppContext from '../../store/AppContext'
 import minimaxAlgo from '../../utils/minimaxAlgo'
 import randomPositionNotTaken from '../../utils/randomStep'
 import randomizeALgoSelection from '../../utils/randomizeAlgoSelection'
 import { RESPONSIVE_LAYOUT } from '../../constants/responsive'
 import { useWindowSize } from '../../hooks/use-WindowsSize'
+import { useSession } from 'next-auth/react'
+
 export default function Canvas({
   boardElements,
   setBoardElements,
@@ -25,12 +28,15 @@ export default function Canvas({
   setSize,
   setCurrentIndex,
   setWinnerMessage,
+  opponent,
+  setOpponent,
 }) {
   const [switchTurns, setSwitchTurns] = React.useState(
     GAME_SETTINGS.ONLINE === modality ? true : turn
   )
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
   const [curWidth, curHeight] = useWindowSize()
+  const { data: session } = useSession(AppContext)
 
   React.useEffect(() => {
     let hold = false
@@ -42,7 +48,6 @@ export default function Canvas({
       if (winner) {
         setWinnerMessage(winner)
         setWinnerFound(true)
-
         // otherwise continue the game
       } else {
         let allCellsSTaken = checkAllCellsTaken(boardElements)
@@ -64,7 +69,8 @@ export default function Canvas({
           moveToTake.i !== undefined &&
           moveToTake.j !== undefined
         ) {
-          //append computer position
+          //append computer position and add to boardArray
+          let newItemForBoardArray
           setBoardElements((boardElements) => {
             boardElements[moveToTake.i][moveToTake.j] = switchTurns ? (
               <XComponent key={GAME_SETTINGS.X_USER} />
@@ -97,10 +103,19 @@ export default function Canvas({
   //listen to an update to the game from the other user
   React.useEffect(() => {
     if (modality === GAME_SETTINGS.ONLINE) {
-      socket.on('updateGame', ({ row, col }) => {
+      socket.on('updateGame', ({ row, col, opponent }) => {
+        setOpponent(opponent)
         setBoardElements((boardElements) => {
           boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
           return boardElements
+        })
+        setMemoizePositions((memoize) => {
+          memoize.push({
+            i: row,
+            j: col,
+            object: <OComponent key={GAME_SETTINGS.O_USER} />,
+          })
+          return memoize
         })
         setSwitchTurns(true)
         setCheckIfWinner(true)
@@ -141,8 +156,10 @@ export default function Canvas({
   const playerVsComputer = (row, col) => {
     if (switchTurns) return
     //append users position
+
     setBoardElements((boardElements) => {
       boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
+
       return boardElements
     })
 
@@ -172,6 +189,14 @@ export default function Canvas({
       )
       return boardElements
     })
+    setMemoizePositions((memoize) => {
+      memoize.push({
+        i: row,
+        j: col,
+        object: <XComponent key={GAME_SETTINGS.X_USER} />,
+      })
+      return memoize
+    })
 
     //switch turns
     setSwitchTurns(!switchTurns)
@@ -185,10 +210,18 @@ export default function Canvas({
         boardElements[row][col] = <XComponent key={GAME_SETTINGS.X_USER} />
         return boardElements
       })
+      setMemoizePositions((memoize) => {
+        memoize.push({
+          i: row,
+          j: col,
+          object: <XComponent key={GAME_SETTINGS.X_USER} />,
+        })
+        return memoize
+      })
       setSwitchTurns(false)
       setCheckIfWinner(true)
       //emit the new changes to the dom to the user
-      socket.emit('play', { row, col, roomCode })
+      socket.emit('play', { row, col, roomCode, opponent: session.user23._id })
     }
   }
 
@@ -235,7 +268,7 @@ export default function Canvas({
           <br></br>
           <br></br>
           <br></br>
-          {boardElements[0][0]} 
+          {boardElements[0][0]}
           <br></br>
           <br></br>
         </Grid>

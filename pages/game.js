@@ -13,11 +13,12 @@ import LeaderBoard from '../components/leaderboard/LeaderBoard'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import useHttp from '../hooks/use-http'
-import { updateUser } from '../routes/api/users'
+import { updateUser, saveData } from '../routes/api/users'
 
 export default function Home() {
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
+  const [opponent, setOpponent] = React.useState('')
   const [turn, setTurn] = React.useState(false)
   const [canOnlineGameStart, setCanOnlineGameStart] = React.useState(false)
   const [roomName, setRoomName] = React.useState(null)
@@ -37,6 +38,64 @@ export default function Home() {
   const { data: session } = useSession(AppContext)
 
   const router = useRouter()
+
+  React.useEffect(() => {
+    if (winnerFound) {
+      if (GAME_SETTINGS.PLAYER_VS_PLAYER === modality) {
+        return
+      }
+      let userWin = 'false'
+      if (GAME_SETTINGS.PLAYER_VS_COMPUTER === modality) {
+        if (winnerMessage === 'oUser') {
+          userWin = 'true'
+        } else if (winnerMessage === 'xUser') {
+          userWin = 'false'
+        } else {
+          userWin = 'tie'
+        }
+      } else if (GAME_SETTINGS.ONLINE === modality) {
+        if (winnerMessage === 'xUser') {
+          userWin = 'true'
+        } else if (winnerMessage === 'oUser') {
+          userWin = 'false'
+        } else {
+          userWin = 'tie'
+        }
+      }
+      let holdMemoizePositions = []
+      memoizePositions.map((e) => {
+        let inside = {
+          i: e.i,
+          j: e.j,
+          key: e.object.key,
+        }
+        holdMemoizePositions.push(inside)
+      })
+
+      let data
+      if (modality === 'online') {
+        data = {
+          modality,
+          userWin,
+          holdMemoizePositions,
+          opponent,
+        }
+      }
+      if (modality === 'pvc') {
+        data = {
+          modality,
+          userWin,
+          difficulty,
+          holdMemoizePositions,
+        }
+      }
+
+      if (session) {
+        saveData(data)
+      }
+      setOpponent('')
+    }
+  }, [winnerFound])
 
   const {
     sendRequest,
@@ -65,25 +124,25 @@ export default function Home() {
   }, [winnerMessage, modality])
 
   //store the wins or loses
-  if (
-    session &&
-    winnerMessage &&
-    (winnerMessage === GAME_SETTINGS.X_USER ||
-      winnerMessage === GAME_SETTINGS.O_USER) &&
-    !hasUserBeenUpdated &&
-    GAME_SETTINGS.ONLINE === modality
-  ) {
-    let wins =
-      winnerMessage === GAME_SETTINGS.X_USER
-        ? session?.user23?.wins + 1
-        : session?.user23?.wins
-    let loses =
-      winnerMessage === GAME_SETTINGS.O_USER
-        ? session?.user23?.loses + 1
-        : session?.user23?.loses
-    sendRequest({ id: session.user23._id, wins, loses })
-    setHasUserBeenUpdated(true)
-  }
+  // if (
+  //   session &&
+  //   winnerMessage &&
+  //   (winnerMessage === GAME_SETTINGS.X_USER ||
+  //     winnerMessage === GAME_SETTINGS.O_USER) &&
+  //   !hasUserBeenUpdated &&
+  //   GAME_SETTINGS.ONLINE === modality
+  // ) {
+  //   let wins =
+  //     winnerMessage === GAME_SETTINGS.X_USER
+  //       ? session?.user23?.wins + 1
+  //       : session?.user23?.wins
+  //   let loses =
+  //     winnerMessage === GAME_SETTINGS.O_USER
+  //       ? session?.user23?.loses + 1
+  //       : session?.user23?.loses
+  //   sendRequest({ id: session.user23._id, wins, loses })
+  //   setHasUserBeenUpdated(true)
+  // }
 
   const resetGame = () => {
     if (roomName) {
@@ -184,9 +243,9 @@ export default function Home() {
             container
             item
             direction="row"
-            
             alignItems="center"
             justifyContent="space-around"
+            sx={{ mt: 2, mb: 1 }}
           >
             {(hasGameBeenSetUp || GAME_SETTINGS.ONLINE === modality) && (
               <Grid container item direction="column" xs={1} md={1} sm={1}>
@@ -260,6 +319,8 @@ export default function Home() {
                   setCurrentIndex={setCurrentIndex}
                   setSize={setSize}
                   setWinnerMessage={setWinnerMessage}
+                  opponent={opponent}
+                  setOpponent={setOpponent}
                 />
               )}
             </Grid>
