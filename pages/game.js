@@ -73,7 +73,7 @@ export default function Home() {
       })
 
       let data
-      if (modality === 'online') {
+      if (modality === GAME_SETTINGS.ONLINE) {
         data = {
           modality,
           userWin,
@@ -81,7 +81,7 @@ export default function Home() {
           opponent,
         }
       }
-      if (modality === 'pvc') {
+      if (modality === GAME_SETTINGS.PLAYER_VS_COMPUTER) {
         data = {
           modality,
           userWin,

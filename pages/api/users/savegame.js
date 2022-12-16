@@ -4,6 +4,7 @@ import crypto from 'crypto'
 const mongoSanitize = require('express-mongo-sanitize')
 import Data from '../../../models/Data'
 import User from '../../../models/User'
+import { GAME_SETTINGS } from '../../../constants/game'
 
 async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -25,7 +26,7 @@ async function handler(req, res) {
   }
   console.log(body)
   let data23
-  if (body.modality === 'online') {
+  if (body.modality === GAME_SETTINGS.ONLINE) {
     data23 = await Data.create({
       user: session.user23._id,
       opponent: body.opponent,
@@ -38,7 +39,7 @@ async function handler(req, res) {
       return
     }
   }
-  if (body.modality === 'pvc') {
+  if (body.modality === GAME_SETTINGS.PLAYER_VS_COMPUTER) {
     data23 = await Data.create({
       user: session.user23._id,
       userWin: body.userWin,
@@ -55,11 +56,11 @@ async function handler(req, res) {
   const user = await User.findOne({ _id: session.user23._id }).exec()
 
   if (!user) {
-    return resp.status(204).json({ message: `Something went wrong.` })
+    return res.status(204).json({ message: `Something went wrong.` })
   }
   user.data.push(data23._id)
 
-  if (body.modality === 'online') {
+  if (body.modality === GAME_SETTINGS.ONLINE) {
     //update the amount of wins
     if (body.userWin === 'true') user.wins = user.wins + 1
     //update the amount of loses
@@ -70,7 +71,7 @@ async function handler(req, res) {
   //persist to the db
   const result = await user.save()
   if (!result) {
-    return resp.status(204).json({ message: `Something went wrong.` })
+    return res.status(204).json({ message: `Something went wrong.` })
   }
 
   res.status(200).json({ message: 'Data saved!' })

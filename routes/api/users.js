@@ -1,9 +1,9 @@
 const colors = ['#FFCA28', '#FFCA28', '#FFCA28']
+import { GAME_SETTINGS } from '../../constants/game'
 
 export async function saveData(data) {
-  console.log('data')
   let body
-  if (data.modality === 'online') {
+  if (data.modality === GAME_SETTINGS.ONLINE) {
     body = {
       modality: data.modality,
       userWin: data.userWin,
@@ -11,7 +11,7 @@ export async function saveData(data) {
       opponent: data.opponent,
     }
   }
-  if (data.modality === 'pvc') {
+  if (data.modality === GAME_SETTINGS.PLAYER_VS_COMPUTER) {
     body = {
       modality: data.modality,
       userWin: data.userWin,
