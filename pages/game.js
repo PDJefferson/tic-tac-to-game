@@ -13,7 +13,7 @@ import LeaderBoard from '../components/leaderboard/LeaderBoard'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import useHttp from '../hooks/use-http'
-import { updateUser, saveData } from '../routes/api/users'
+import { saveData } from '../routes/api/users'
 
 export default function Home() {
   const [modality, setModality] = React.useState(null)
@@ -97,12 +97,12 @@ export default function Home() {
     }
   }, [winnerFound])
 
-  const {
-    sendRequest,
-    data: updatedData,
-    status,
-    error,
-  } = useHttp(updateUser, false)
+  // const {
+  //   sendRequest,
+  //   data: updatedData,
+  //   status,
+  //   error,
+  // } = useHttp(updateUser, false)
 
   //if the user wants to play online then make him sign in
   if (!session && modality === GAME_SETTINGS.ONLINE) {
@@ -122,27 +122,6 @@ export default function Home() {
       ? sanitizeAfterGameMessage(modality, winnerMessage)
       : null
   }, [winnerMessage, modality])
-
-  //store the wins or loses
-  // if (
-  //   session &&
-  //   winnerMessage &&
-  //   (winnerMessage === GAME_SETTINGS.X_USER ||
-  //     winnerMessage === GAME_SETTINGS.O_USER) &&
-  //   !hasUserBeenUpdated &&
-  //   GAME_SETTINGS.ONLINE === modality
-  // ) {
-  //   let wins =
-  //     winnerMessage === GAME_SETTINGS.X_USER
-  //       ? session?.user23?.wins + 1
-  //       : session?.user23?.wins
-  //   let loses =
-  //     winnerMessage === GAME_SETTINGS.O_USER
-  //       ? session?.user23?.loses + 1
-  //       : session?.user23?.loses
-  //   sendRequest({ id: session.user23._id, wins, loses })
-  //   setHasUserBeenUpdated(true)
-  // }
 
   const resetGame = () => {
     if (roomName) {
