@@ -1,5 +1,5 @@
 import { Server } from 'socket.io'
-
+import { GAME_SETTINGS } from '../../constants/game'
 const SocketHandler = (req, res) => {
   if (res.socket.server.io) {
     console.log('socket has already been initialized')
@@ -27,11 +27,9 @@ const SocketHandler = (req, res) => {
         ) {
           console.log('room is full create a new room')
           socket.emit('roomFull', roomCode)
-          //join the user to the room since there is still some space
+          //join the user to the room since is missing one  player
         } else {
-          //get the users in this specific room
-          const connectedSockets = io.sockets.adapter.rooms.get(roomCode)
-          //if the same use is trying to join the room don't allow it
+          //if the same user is trying to join the room
           //then make the user leave the room and then re enter it
           if (
             connectedSockets &&
@@ -47,13 +45,22 @@ const SocketHandler = (req, res) => {
 
           //if the room has two users, then start the game
           if (io.sockets.adapter.rooms.get(roomCode)?.size === 2) {
+            let roomsAvailable = getRoomsAvailable(io.sockets)
             console.log('room where the game is being hosted is', roomCode)
-            socket.emit('startGame', true)
-            socket.to(roomCode).emit('startGame', true)
+            //send this message to everyone except the current user
+            socket.broadcast.emit('listRooms', { roomsAvailable })
+            socket.emit('startGame', roomCode)
+            socket.to(roomCode).emit('startGame', roomCode)
           }
         }
       })
 
+      socket.on('getRooms', () => {
+        //get rooms available
+        let roomsAvailable = getRoomsAvailable(io.sockets)
+        //emit message to all connected sockets with the rooms available
+        socket.emit('listRooms', { roomsAvailable })
+      })
       //listens to leave room which  gets trigger when a user leaves an specific room
       socket.on('leaveRoom', ({ roomCode }) => {
         console.log('user has left room', roomCode)
@@ -85,7 +92,7 @@ const SocketHandler = (req, res) => {
             value
               .toString()
               .toLowerCase()
-              .startsWith('roomJoined'.toLowerCase())
+              .startsWith(GAME_SETTINGS.APPEND_ROOM.toLowerCase())
           ) {
             socket.broadcast.to(value).emit('onOtherUserLeaving', true)
           }
@@ -94,8 +101,21 @@ const SocketHandler = (req, res) => {
     })
     res.end()
   }
+}
 
-  
+function getRoomsAvailable(sockets) {
+  let roomsAvailable = Array.from(sockets.adapter.rooms.keys()).filter((room) =>
+    room
+      .toString()
+      .toLowerCase()
+      .startsWith(GAME_SETTINGS.APPEND_ROOM.toLowerCase())
+  )
+  roomsAvailable = roomsAvailable.map((room) => ({
+    room,
+    //get amount of users in that room
+    size: sockets.adapter.rooms.get(room).size,
+  }))
+  return roomsAvailable
 }
 
 export default SocketHandler

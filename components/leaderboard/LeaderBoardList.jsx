@@ -1,6 +1,5 @@
 import React from 'react'
-import { CardContent, Typography, Grid, Box } from '@mui/material'
-import { borderRadius, minWidth } from '@mui/system'
+import { CardContent, Typography, Grid, Box, Avatar } from '@mui/material'
 import { getAllUsers } from '../../routes/api/users'
 import useHttp from '../../hooks/use-http'
 //temp var
@@ -103,13 +102,12 @@ export default function LeaderBoardList({ passedList = [] }) {
                   direction="column"
                   alignSelf={'center'}
                 >
-                  <img
+                  <Avatar
                     src={user.image}
                     width="45px"
                     height="50px"
-                    alt="cat"
+                    alt="user profile"
                     loading="lazy"
-                    style={{ borderRadius: '50%' }}
                   />
                 </Grid>
 

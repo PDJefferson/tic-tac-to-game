@@ -132,7 +132,7 @@ export default function Home() {
 
   const startOnlineGame = (roomCode) => {
     setHasUserBeenUpdated(false)
-    setRoomName(`roomJoined${roomCode}`)
+    setRoomName(roomCode)
     setCanOnlineGameStart(true)
   }
 
@@ -184,7 +184,6 @@ export default function Home() {
             container
             item
             direction="row"
-            
             alignItems="center"
             justifyContent="space-around"
           >
