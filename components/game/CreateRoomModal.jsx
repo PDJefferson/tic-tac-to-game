@@ -12,7 +12,7 @@ const style = {
   p: 4,
 }
 
-export default function CustomModal({ setIsModalOpen, isModalOpen, joinRoom }) {
+export default function CreateRoomModal({ setIsModalOpen, isModalOpen, joinRoom }) {
   const [newRoom, setNewRoom] = React.useState('')
   return (
     <Modal

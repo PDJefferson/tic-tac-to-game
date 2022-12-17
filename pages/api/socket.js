@@ -13,7 +13,7 @@ const SocketHandler = (req, res) => {
     io.on('connection', (socket) => {
       console.log('User Connected')
       //check if a user has join a room
-      socket.on('joinRoom', async (roomCode) => {
+      socket.on('joinRoom', async ({ roomCode, user }) => {
         //get the users in this specific room
         const connectedSockets = io.sockets.adapter.rooms.get(roomCode)
         //get all rooms
@@ -49,8 +49,8 @@ const SocketHandler = (req, res) => {
             console.log('room where the game is being hosted is', roomCode)
             //send this message to everyone except the current user
             socket.broadcast.emit('listRooms', { roomsAvailable })
-            socket.emit('startGame', roomCode)
-            socket.to(roomCode).emit('startGame', roomCode)
+            socket.emit('startGame', { roomCode, user })
+            socket.to(roomCode).emit('startGame', { roomCode, user })
           }
         }
       })

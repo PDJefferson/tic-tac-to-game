@@ -86,20 +86,21 @@ export default function Home() {
   }
 
   const resetGame = () => {
+    setWinnerFound(false)
+    setWinnerMessage(null)
     if (roomName) {
       socket.emit('leaveRoom', { roomCode: roomName })
     }
     setHasUserBeenUpdated(false)
     setModality(null)
     setDifficulty(null)
-    setWinnerMessage(null)
+
     setMemoizePositions(new Array())
     setCurrentIndex(-1)
     setSize(0)
-    setCanOnlineGameStart(null)
+    setCanOnlineGameStart(false)
     hasGameBeenSetUp = false
     sanitizeWinnerMessage = null
-    setWinnerFound(false)
     setBoardElements([
       [undefined, undefined, undefined],
       [undefined, undefined, undefined],
@@ -111,18 +112,18 @@ export default function Home() {
     //if the game modality is online then
     //on play again take it to the room lobby to find
     //someone to play with, temp solution
-    if (modality === GAME_SETTINGS.ONLINE) {
+    setWinnerFound(false)
+    setWinnerMessage(null)
+    if (modality === GAME_SETTINGS.ONLINE && roomName) {
       setCanOnlineGameStart(false)
       socket.emit('leaveRoom', { roomCode: roomName })
     }
     setHasUserBeenUpdated(false)
-    setWinnerMessage(null)
     setMemoizePositions(new Array())
     setCurrentIndex(-1)
     setSize(0)
     setTurn(!turn)
     sanitizeWinnerMessage = null
-    setWinnerFound(false)
     setBoardElements([
       [undefined, undefined, undefined],
       [undefined, undefined, undefined],
@@ -234,6 +235,7 @@ export default function Home() {
                 !canOnlineGameStart && (
                   <RoomLobby
                     socket={socket}
+                    session={session}
                     startGame={startOnlineGame}
                     resetGame={resetGame}
                   />

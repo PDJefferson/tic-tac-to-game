@@ -42,7 +42,6 @@ export default function Canvas({
       if (winner) {
         setWinnerMessage(winner)
         setWinnerFound(true)
-
         // otherwise continue the game
       } else {
         let allCellsSTaken = checkAllCellsTaken(boardElements)
@@ -114,7 +113,7 @@ export default function Canvas({
     if (modality === GAME_SETTINGS.ONLINE) {
       socket.on('onOtherUserLeaving', (flag) => {
         socket.emit('leaveRoom', { roomCode })
-        setWinnerMessage('The other user has left the game, you won!')
+        setWinnerMessage('The other user has left the game!')
         setWinnerFound(true)
       })
       return () => socket.off('onOtherUserLeaving')
