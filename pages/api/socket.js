@@ -1,5 +1,6 @@
 import { Server } from 'socket.io'
 import { GAME_SETTINGS } from '../../constants/game'
+let usersJoined = new Map()
 const SocketHandler = (req, res) => {
   if (res.socket.server.io) {
     console.log('socket has already been initialized')
@@ -20,6 +21,7 @@ const SocketHandler = (req, res) => {
         const socketRooms = Array.from(socket.rooms.values()).filter(
           (r) => r !== socket.id
         )
+        let roomsAvailable = getRoomsAvailable(io.sockets)
         //if the current room is full send a message to create a new one
         if (
           socketRooms.length > 0 ||
@@ -30,27 +32,52 @@ const SocketHandler = (req, res) => {
           //join the user to the room since is missing one  player
         } else {
           //if the same user is trying to join the room
-          //then make the user leave the room and then re enter it
+          //then make the user leave the room
           if (
-            connectedSockets &&
-            [...connectedSockets].filter(
-              (connectedSocket) => connectedSocket === socket.id
-            )
+            usersJoined.size > 0 &&
+            usersJoined.get(roomCode)[0].user._id === user._id
           ) {
-            console.log('user tried to join the same room twice')
+            socket.to(roomCode).emit('isSameUser', {
+              message: 'Cannot play against yourself',
+            })
             await socket.leave(roomCode)
+            await usersJoined.get(roomCode)[0].socket.leave(roomCode)
+            socket.emit('isSameUser', {
+              message: 'Cannot play against yourself',
+            })
+
+            //update the rooms open
+            roomsAvailable = getRoomsAvailable(io.sockets)
+            //update the rooms open
+            socket.emit('listRooms', { roomsAvailable })
+            //remove the users data
+            usersJoined = new Map()
+            return
+          }
+          //check if there are no users that joined this specific room
+          //to memoize the current user
+          if (usersJoined.size === 0) {
+            let userList = new Array()
+            userList.push({ user: user, socket: socket })
+            usersJoined.set(roomCode, userList)
           }
           console.log('joining user to room:', roomCode)
           await socket.join(roomCode)
 
           //if the room has two users, then start the game
           if (io.sockets.adapter.rooms.get(roomCode)?.size === 2) {
-            let roomsAvailable = getRoomsAvailable(io.sockets)
             console.log('room where the game is being hosted is', roomCode)
             //send this message to everyone except the current user
             socket.broadcast.emit('listRooms', { roomsAvailable })
-            socket.emit('startGame', { roomCode, user })
-            socket.to(roomCode).emit('startGame', { roomCode, user })
+            //update the other user
+            socket.emit('startGame', {
+              roomCode,
+              user: usersJoined.get(roomCode)[0].user,
+            })
+            //remove the users data
+            usersJoined = new Map()
+            //send the info of the first user who joined  to current user
+            socket.broadcast.to(roomCode).emit('startGame', { roomCode, user })
           }
         }
       })
@@ -64,6 +91,9 @@ const SocketHandler = (req, res) => {
       //listens to leave room which  gets trigger when a user leaves an specific room
       socket.on('leaveRoom', ({ roomCode }) => {
         console.log('user has left room', roomCode)
+        if (usersJoined.size > 0 && usersJoined.get(roomCode)) {
+          usersJoined = new Map()
+        }
         socket.leave(roomCode)
         console.log(socket.adapter.rooms)
         //send a message to the other user that is still in the match and

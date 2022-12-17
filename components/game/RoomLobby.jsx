@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import {
   ButtonBase,
   Card,
@@ -21,7 +21,7 @@ import TableRow, { tableRowClasses } from '@mui/material/TableRow'
 import { disableButtonTheme } from '../../styles/muiThemeStyles'
 import CreateRoomModal from './CreateRoomModal'
 import DisplayUserInfo from './DisplayUserInfo'
-import { memo } from 'react'
+import AlertSnackBar from '../AlertSnackBar'
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
@@ -53,7 +53,19 @@ function RoomLobby({ socket, startGame, resetGame, session }) {
   const [roomChosen, setRoomChosen] = React.useState(null)
   const [isModalOpen, setIsModalOpen] = React.useState(false)
   const [showStats, setShowStats] = React.useState(null)
+  const [showAlert, setShowAlert] = React.useState({
+    alert: false,
+    message: '',
+  })
+  //check if the user is playing against himself
+  React.useEffect(() => {
+    socket.on('isSameUser', ({ message }) => {
+      setIsBackDropShown(false)
+      setShowAlert({ alert: true, message: message })
+    })
 
+    return () => socket.off('isSameUser')
+  }, [])
   //listens to this socket event which will trigger whenever
   //a room has two users to start playing
   React.useEffect(() => {
@@ -146,6 +158,14 @@ function RoomLobby({ socket, startGame, resetGame, session }) {
   }
   return (
     <>
+      {showAlert.alert && (
+        <AlertSnackBar
+          passedMessage={showAlert.message}
+          typeMessage={'warning'}
+          removeData={() => setShowAlert({ alert: false, message: '' })}
+        />
+      )}
+
       {showStats && (
         <DisplayUserInfo
           adversary={showStats.user}
