@@ -43,3 +43,16 @@ export async function getAllUsers() {
   data.forEach((obj, index) => (obj.color = colors[index]))
   return data
 }
+
+export async function getData5() {
+  //listen to this response
+  const response = await fetch('/api/users/data5', {
+    method: 'GET',
+  })
+  if (!response.ok) {
+    throw new Error(data.message || 'Something went wrong.')
+  }
+
+  const data = await response.json()
+  return data
+}

@@ -13,9 +13,14 @@ import LeaderBoard from '../components/leaderboard/LeaderBoard'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import useHttp from '../hooks/use-http'
-import { saveData } from '../routes/api/users'
+import { saveData, getData5 } from '../routes/api/users'
+import History from '../components/History'
+import { getSession } from 'next-auth/react'
+import Data from '../models/Data'
+import { get } from 'mongoose'
 
-export default function Home() {
+export default function Home({ data }) {
+  const [again, setAgain] = React.useState(false)
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
   const [opponent, setOpponent] = React.useState('')
@@ -123,7 +128,7 @@ export default function Home() {
       : null
   }, [winnerMessage, modality])
 
-  const resetGame = () => {
+  const resetGame = async () => {
     if (roomName) {
       socket.emit('leaveRoom', { roomCode: roomName })
     }
@@ -228,7 +233,13 @@ export default function Home() {
           >
             {(hasGameBeenSetUp || GAME_SETTINGS.ONLINE === modality) && (
               <Grid container item direction="column" xs={1} md={1} sm={1}>
-                <Button onClick={(e) => resetGame()} variant="contained">
+                <Button
+                  onClick={(e) => {
+                    resetGame()
+                    setAgain(true)
+                  }}
+                  variant="contained"
+                >
                   return
                 </Button>
               </Grid>
@@ -340,7 +351,30 @@ export default function Home() {
             </Grid>
           </Grid>
         </Grid>
+        {session && !modality && (
+          <History data={data} again={again} setAgain={setAgain} />
+        )}
       </Grid>
     </>
   )
+}
+
+export async function getServerSideProps(context) {
+  const session = await getSession({ req: context.req })
+
+  if (session) {
+    const getData = await Data.find({ user: session.user23._id })
+      .sort({ dateUnix: -1 })
+      .limit(5)
+      .populate({
+        path: 'opponent',
+        select: 'name',
+      })
+
+    return { props: { data: JSON.stringify(getData) } }
+  }
+
+  return {
+    props: {},
+  }
 }
