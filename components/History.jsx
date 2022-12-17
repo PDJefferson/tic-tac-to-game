@@ -1,5 +1,5 @@
 import React from 'react'
-import { Typography, Grid, Box } from '@mui/material'
+import { Typography, Grid, Box, IconButton } from '@mui/material'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
 import TableCell from '@mui/material/TableCell'
@@ -90,7 +90,12 @@ export default function History({ data, again, setAgain }) {
       <Grid
         container
         direction="row"
-        sx={{ backgroundColor: '#36454F', mb: 5 }}
+        sx={{ backgroundColor: '#36454F', mb: 5, cursor: 'pointer' }}
+        onClick={() => {
+          router.push({
+            pathname: '/archive',
+          })
+        }}
       >
         <PermMediaIcon sx={{ color: 'grey', mt: 1, mb: 1, ml: 15 }} />
         <Typography sx={{ color: 'white', textAlign: 'center', mt: 1, ml: 2 }}>

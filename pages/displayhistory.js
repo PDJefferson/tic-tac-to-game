@@ -21,6 +21,7 @@ import AddIcon from '@mui/icons-material/Add'
 import ContrastIcon from '@mui/icons-material/Contrast'
 import KeyboardReturnIcon from '@mui/icons-material/KeyboardReturn'
 import { useRouter } from 'next/router'
+import { disableButtonTheme } from '../styles/muiThemeStyles'
 
 export default function Home({ data }) {
   const router = useRouter()
@@ -94,9 +95,7 @@ export default function Home({ data }) {
                   <TableCell sx={{ borderBottom: 'none', mr: 20 }} align="left">
                     <IconButton
                       onClick={() => {
-                        router.push({
-                          pathname: '/game',
-                        })
+                        router.back()
                       }}
                     >
                       <KeyboardReturnIcon sx={{ color: 'white' }} />
@@ -328,8 +327,10 @@ export default function Home({ data }) {
           </Grid>
           <Grid item sx={{ mt: 2, mb: 5 }}>
             <Button
-              variant="outlined"
-              disabled={currentIndex === 0}
+              variant="contained"
+              disabled={currentIndex === -1}
+              color="error"
+              theme={disableButtonTheme}
               onClick={() => {
                 //remove current index from board
                 setBoardElements((boardElements) => {
@@ -347,8 +348,10 @@ export default function Home({ data }) {
               Previous
             </Button>
             <Button
-              variant="outlined"
+              variant="contained"
               disabled={maxIndex === currentIndex}
+              color="success"
+              theme={disableButtonTheme}
               onClick={() => {
                 //add current index + 1 to the board
                 setBoardElements((boardElements) => {
@@ -381,7 +384,7 @@ export async function getServerSideProps(context) {
   if (!session) {
     return {
       redirect: {
-        destination: '/',
+        destination: '/game',
         permanent: false,
       },
     }
