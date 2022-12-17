@@ -32,7 +32,7 @@ export async function saveData(data) {
 
 export async function getAllUsers() {
   //listen to this response
-  const response = await fetch('/api/users/list', {
+  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/users/list`, {
     method: 'GET',
   })
   if (!response.ok) {
@@ -46,7 +46,7 @@ export async function getAllUsers() {
 
 export async function getData5() {
   //listen to this response
-  const response = await fetch('/api/users/data5', {
+  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/users/data5`, {
     method: 'GET',
   })
   if (!response.ok) {
