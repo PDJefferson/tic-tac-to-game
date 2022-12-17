@@ -45,13 +45,12 @@ const SocketHandler = (req, res) => {
             socket.emit('isSameUser', {
               message: 'Cannot play against yourself',
             })
-
             //update the rooms open
             roomsAvailable = getRoomsAvailable(io.sockets)
             //update the rooms open
             socket.emit('listRooms', { roomsAvailable })
             //remove the users data
-            usersJoined = new Map()
+            usersJoined.delete(roomCode)
             return
           }
           //check if there are no users that joined this specific room
@@ -75,7 +74,7 @@ const SocketHandler = (req, res) => {
               user: usersJoined.get(roomCode)[0].user,
             })
             //remove the users data
-            usersJoined = new Map()
+            usersJoined.delete(roomCode)
             //send the info of the first user who joined  to current user
             socket.broadcast.to(roomCode).emit('startGame', { roomCode, user })
           }
@@ -92,7 +91,7 @@ const SocketHandler = (req, res) => {
       socket.on('leaveRoom', ({ roomCode }) => {
         console.log('user has left room', roomCode)
         if (usersJoined.size > 0 && usersJoined.get(roomCode)) {
-          usersJoined = new Map()
+          usersJoined.delete(roomCode)
         }
         socket.leave(roomCode)
         console.log(socket.adapter.rooms)
