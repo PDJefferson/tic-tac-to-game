@@ -397,7 +397,7 @@ export async function getServerSideProps(context) {
   if (!getData) {
     return {
       redirect: {
-        destination: '/',
+        destination: '/game',
         permanent: false,
       },
     }

@@ -25,10 +25,6 @@ async function handler(req, res) {
       select: 'name',
     })
 
-  if (!getData) {
-    return res.status(204).json({ message: `Something went wrong.` })
-  }
-
   res.status(200).json({ message: 'Data saved!', data: getData })
   return
 }
