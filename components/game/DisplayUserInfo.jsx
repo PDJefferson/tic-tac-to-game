@@ -1,7 +1,6 @@
 import React, { memo } from 'react'
 import { Box, CardContent, Typography, Card, Grid, Avatar } from '@mui/material'
-import useTimeComponent from '../../hooks/use-TimeComponent'
-import { minHeight, minWidth } from '@mui/system'
+import useTimeComponent from '../../hooks/use-timeComponent'
 function DisplayUserInfo({
   startGame,
   currPlayer,
