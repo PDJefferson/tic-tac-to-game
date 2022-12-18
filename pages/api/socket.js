@@ -12,7 +12,6 @@ const SocketHandler = (req, res) => {
     res.socket.server.io = io
     //listen to any users on connection
     io.on('connection', (socket) => {
-      console.log('User Connected')
       //check if a user has join a room
       socket.on('joinRoom', async ({ roomCode, user }) => {
         //get the users in this specific room
@@ -35,6 +34,7 @@ const SocketHandler = (req, res) => {
           //then make the user leave the room
           if (
             usersJoined.size > 0 &&
+            usersJoined.hasOwnProperty(roomCode) &&
             usersJoined.get(roomCode)[0].user._id === user._id
           ) {
             socket.to(roomCode).emit('isSameUser', {
@@ -55,7 +55,8 @@ const SocketHandler = (req, res) => {
           }
           //check if there are no users that joined this specific room
           //to memoize the current user
-          if (usersJoined.size === 0) {
+          if (usersJoined.hasOwnProperty(roomCode) === false) {
+            console.count(Array.from(usersJoined.keys()), 'check')
             let userList = new Array()
             userList.push({ user: user, socket: socket })
             usersJoined.set(roomCode, userList)
@@ -65,17 +66,23 @@ const SocketHandler = (req, res) => {
 
           //if the room has two users, then start the game
           if (io.sockets.adapter.rooms.get(roomCode)?.size === 2) {
+            console.log(
+              usersJoined.get(roomCode)[0].user.name,
+              ' vs ',
+              user.name
+            )
             console.log('room where the game is being hosted is', roomCode)
-            //send this message to everyone except the current user
-            socket.broadcast.emit('listRooms', { roomsAvailable })
-            //update the other user
+            //send this message to everyone
+            socket.emit('listRooms', { roomsAvailable })
+            //update the last user who joined
             socket.emit('startGame', {
               roomCode,
               user: usersJoined.get(roomCode)[0].user,
             })
-            //remove the users data
-            usersJoined.delete(roomCode)
-            //send the info of the first user who joined  to current user
+
+            //add the other user to room
+            usersJoined.get(roomCode).push({ user: user, socket: socket })
+            //send the info of the last user who joined the room to the user who hosted
             socket.broadcast.to(roomCode).emit('startGame', { roomCode, user })
           }
         }
@@ -87,22 +94,24 @@ const SocketHandler = (req, res) => {
         //emit message to all connected sockets with the rooms available
         socket.emit('listRooms', { roomsAvailable })
       })
-      //listens to leave room which  gets trigger when a user leaves an specific room
+      //listens to leave room which gets trigger when a user leaves a specific room
       socket.on('leaveRoom', ({ roomCode }) => {
         console.log('user has left room', roomCode)
-        if (usersJoined.size > 0 && usersJoined.get(roomCode)) {
-          usersJoined.delete(roomCode)
-        }
-        socket.leave(roomCode)
         console.log(socket.adapter.rooms)
         //send a message to the other user that is still in the match and
         //update it about the other user leaving
         socket.broadcast.to(roomCode).emit('onOtherUserLeaving', true)
+        socket.leave(roomCode)
+        if (usersJoined.size > 0 && usersJoined.get(roomCode)) {
+          //make both users leave the room
+          usersJoined.get(roomCode)[0]?.socket?.leave(roomCode)
+          usersJoined.get(roomCode)[1]?.socket?.leave(roomCode)
+          usersJoined.delete(roomCode)
+        }
       })
 
       //play a move in the board
       socket.on('play', ({ row, col, roomCode, opponent }) => {
-        console.log('hi')
         console.log(`play at ${row} ${col} to ${roomCode} vs ${opponent}`)
         //update the other user screen
         socket.broadcast.to(roomCode).emit('updateGame', { row, col, opponent })
@@ -124,6 +133,11 @@ const SocketHandler = (req, res) => {
               .toLowerCase()
               .startsWith(GAME_SETTINGS.APPEND_ROOM.toLowerCase())
           ) {
+            if (usersJoined.size > 0 && usersJoined.get(value)) {
+              //if one user leaves the room make both leave by default
+              //and remove the memoize data
+              usersJoined.delete(value)
+            }
             socket.broadcast.to(value).emit('onOtherUserLeaving', true)
           }
         })

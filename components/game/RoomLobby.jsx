@@ -1,6 +1,7 @@
 import React, { memo } from 'react'
 import {
   ButtonBase,
+  Grid,
   Card,
   CardContent,
   Typography,
@@ -8,7 +9,6 @@ import {
   Paper,
   Button,
 } from '@mui/material'
-import { DataGrid } from '@mui/x-data-grid'
 import WaitingProgress from '../WaitingProgress'
 import { GAME_SETTINGS } from '../../constants/game'
 import { styled } from '@mui/material/styles'
@@ -65,11 +65,11 @@ function RoomLobby({ socket, startGame, resetGame, session }) {
     })
 
     return () => socket.off('isSameUser')
-  }, [])
+  })
   //listens to this socket event which will trigger whenever
   //a room has two users to start playing
   React.useEffect(() => {
-    socket?.on('startGame', ({ roomCode, user }) => {
+    socket?.on('startGame', async ({ roomCode, user }) => {
       setShowStats({ roomCode, user })
     })
     return () => socket.off('startGame')
@@ -175,118 +175,132 @@ function RoomLobby({ socket, startGame, resetGame, session }) {
           startGame={startGame}
         />
       )}
-      {!showStats ? (
-        <>
-          {isModalOpen && (
-            <CreateRoomModal
-              isModalOpen={isModalOpen}
-              setIsModalOpen={setIsModalOpen}
-              joinRoom={joinCustomRoom}
-            />
-          )}
-          {isBackDropShown && (
-            <WaitingProgress
-              isBackDropShown={isBackDropShown}
-              setIsBackdropShown={leaveRoom}
-            />
-          )}
-          <Card
-            sx={{
-              minWidth: 360,
-              maxWidth: 400,
-              minHeight: 300,
-              backgroundColor: '#252525',
-            }}
-            variant="outlined"
-          >
-            <CardContent>
-              <Typography
-                sx={{ fontSize: 18, cursor: 'pointer' }}
-                color="text.secondary"
-                align="center"
-                variant="body1"
-                marginTop={4}
-                backgroundColor="white"
-                paddingTop={2}
-                paddingBottom={2}
-                marginBottom={2}
-                onClick={(e) => joinQueue(e)}
-                disabled={isBackDropShown}
-              >
-                {isBackDropShown
-                  ? 'WAITING FOR ANOTHER USER TO JOIN...'
-                  : 'JOIN/CREATE RANDOM ROOM'}
-              </Typography>
-              {rooms.length > 0 && (
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 360 }} aria-label="customized table">
-                    <TableHead>
-                      <TableRow>
-                        <StyledTableCell>ROOMS</StyledTableCell>
-                        <StyledTableCell align="right">
-                          CURRENT PLAYERS
-                        </StyledTableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {rooms.map((room) => (
-                        <StyledTableRow
-                          key={room.room}
-                          hover
-                          selected={roomChosen?.room === room.room}
-                          disabled={room.size === 2}
-                          onClick={(e) =>
-                            room.size === 2
-                              ? null
-                              : setRoomChosen(roomChosen === room ? null : room)
-                          }
-                          sx={{
-                            cursor: room.size === 2 ? 'not-allowed' : 'pointer',
-                          }}
-                        >
-                          <StyledTableCell component="th" scope="row">
-                            {room.room}
-                          </StyledTableCell>
-                          <StyledTableCell align="right">
-                            {`${room.size}/2`}
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-            </CardContent>
-            <CardActions
+      <Grid container justifyContent="center">
+        {!showStats ? (
+          <>
+            {isModalOpen && (
+              <CreateRoomModal
+                isModalOpen={isModalOpen}
+                setIsModalOpen={setIsModalOpen}
+                joinRoom={joinCustomRoom}
+              />
+            )}
+            {isBackDropShown && (
+              <WaitingProgress
+                isBackDropShown={isBackDropShown}
+                setIsBackdropShown={leaveRoom}
+              />
+            )}
+            <Card
               sx={{
-                display: 'flex',
-                justifyContent: 'space-around',
-                alignSelf: 'end',
+                minWidth: 360,
+                maxWidth: 400,
+                minHeight: 300,
+                backgroundColor: '#252525',
               }}
+              variant="outlined"
             >
-              <Button
-                size="small"
-                variant="contained"
-                disabled={!roomChosen}
-                theme={disableButtonTheme}
-                onClick={(e) =>
-                  joinCustomRoom(roomChosen.room, roomChosen.size)
-                }
+              <CardContent>
+                <Button
+                  onClick={(e) => {
+                    resetGame()
+                  }}
+                  variant="contained"
+                  size="small"
+                >
+                  return
+                </Button>
+                <Typography
+                  sx={{ fontSize: 18, cursor: 'pointer' }}
+                  color="text.secondary"
+                  align="center"
+                  variant="body1"
+                  marginTop={4}
+                  backgroundColor="white"
+                  paddingTop={2}
+                  paddingBottom={2}
+                  marginBottom={2}
+                  onClick={(e) => joinQueue(e)}
+                  disabled={isBackDropShown}
+                >
+                  {isBackDropShown
+                    ? 'WAITING FOR ANOTHER USER TO JOIN...'
+                    : 'JOIN/CREATE RANDOM ROOM'}
+                </Typography>
+                {rooms.length > 0 && (
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 360 }} aria-label="customized table">
+                      <TableHead>
+                        <TableRow>
+                          <StyledTableCell>ROOMS</StyledTableCell>
+                          <StyledTableCell align="right">
+                            CURRENT PLAYERS
+                          </StyledTableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {rooms.map((room) => (
+                          <StyledTableRow
+                            key={room.room}
+                            hover
+                            selected={roomChosen?.room === room.room}
+                            disabled={room.size === 2}
+                            onClick={(e) =>
+                              room.size === 2
+                                ? null
+                                : setRoomChosen(
+                                    roomChosen === room ? null : room
+                                  )
+                            }
+                            sx={{
+                              cursor:
+                                room.size === 2 ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            <StyledTableCell component="th" scope="row">
+                              {room.room}
+                            </StyledTableCell>
+                            <StyledTableCell align="right">
+                              {`${room.size}/2`}
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+              </CardContent>
+              <CardActions
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-around',
+                  alignSelf: 'end',
+                }}
               >
-                JOIN ROOM
-              </Button>
-              <Button
-                size="small"
-                variant="contained"
-                theme={disableButtonTheme}
-                onClick={(e) => setIsModalOpen(true)}
-              >
-                CREATE CUSTOM ROOM
-              </Button>
-            </CardActions>
-          </Card>
-        </>
-      ) : null}
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={!roomChosen}
+                  theme={disableButtonTheme}
+                  onClick={(e) =>
+                    joinCustomRoom(roomChosen.room, roomChosen.size)
+                  }
+                >
+                  JOIN ROOM
+                </Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  theme={disableButtonTheme}
+                  onClick={(e) => setIsModalOpen(true)}
+                >
+                  CREATE CUSTOM ROOM
+                </Button>
+              </CardActions>
+            </Card>
+          </>
+        ) : null}
+      </Grid>
     </>
   )
 }

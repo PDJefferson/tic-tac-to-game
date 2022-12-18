@@ -12,12 +12,10 @@ import { disableButtonTheme } from '../styles/muiThemeStyles'
 import LeaderBoard from '../components/leaderboard/LeaderBoard'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import useHttp from '../hooks/use-http'
 import { saveData, getData5 } from '../routes/api/users'
 import History from '../components/History'
 import { getSession } from 'next-auth/react'
 import Data from '../models/Data'
-import { get } from 'mongoose'
 
 export default function Home({ data }) {
   const [again, setAgain] = React.useState(false)
@@ -37,11 +35,9 @@ export default function Home({ data }) {
     [undefined, undefined, undefined],
     [undefined, undefined, undefined],
   ])
-  const [hasUserBeenUpdated, setHasUserBeenUpdated] = React.useState(false)
   const { socket } = React.useContext(AppContext)
   //getting the current user who has been authenticated
   const { data: session } = useSession(AppContext)
-
   const router = useRouter()
 
   React.useEffect(() => {
@@ -134,7 +130,6 @@ export default function Home({ data }) {
     if (roomName) {
       socket.emit('leaveRoom', { roomCode: roomName })
     }
-    setHasUserBeenUpdated(false)
     setModality(null)
     setDifficulty(null)
 
@@ -161,7 +156,6 @@ export default function Home({ data }) {
       setCanOnlineGameStart(false)
       socket.emit('leaveRoom', { roomCode: roomName })
     }
-    setHasUserBeenUpdated(false)
     setMemoizePositions(new Array())
     setCurrentIndex(-1)
     setSize(0)
@@ -175,7 +169,6 @@ export default function Home({ data }) {
   }
 
   const startOnlineGame = (roomCode) => {
-    setHasUserBeenUpdated(false)
     setRoomName(roomCode)
     setCanOnlineGameStart(true)
   }
@@ -232,7 +225,7 @@ export default function Home({ data }) {
             justifyContent="space-around"
             sx={{ mt: 2, mb: 1 }}
           >
-            {(hasGameBeenSetUp || GAME_SETTINGS.ONLINE === modality) && (
+            {hasGameBeenSetUp && (
               <Grid container item direction="column" xs={1} md={1} sm={1}>
                 <Button
                   onClick={(e) => {
