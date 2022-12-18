@@ -7,8 +7,8 @@ export default function LeaderBoard() {
     <Grid
       container
       item
-      xs={12}
-      sm={12}
+      xs={10}
+      sm={10}
       md={4}
       direction="row"
       minHeight={'580px'}

@@ -1,16 +1,19 @@
 import React from 'react'
-import { breadcrumbsClasses, Grid } from '@mui/material'
+import { Grid } from '@mui/material'
 import OComponent from './OComponent'
 import XComponent from './XComponent'
 import classes from '../../styles/Canvas.module.css'
 import checkWinner from '../../utils/winnerLogic.js'
 import checkAllCellsTaken from '../../utils/checkCellsTaken'
 import { GAME_SETTINGS } from '../../constants/game'
+import AppContext from '../../store/AppContext'
 import minimaxAlgo from '../../utils/minimaxAlgo'
 import randomPositionNotTaken from '../../utils/randomStep'
 import randomizeALgoSelection from '../../utils/randomizeAlgoSelection'
 import { RESPONSIVE_LAYOUT } from '../../constants/responsive'
 import { useWindowSize } from '../../hooks/use-WindowsSize'
+import { useSession } from 'next-auth/react'
+
 export default function Canvas({
   boardElements,
   setBoardElements,
@@ -25,14 +28,17 @@ export default function Canvas({
   setSize,
   setCurrentIndex,
   setWinnerMessage,
+  opponent,
+  setOpponent,
 }) {
   const [switchTurns, setSwitchTurns] = React.useState(
     GAME_SETTINGS.ONLINE === modality ? true : turn
   )
   const [checkIfWinner, setCheckIfWinner] = React.useState(false)
   const [curWidth, curHeight] = useWindowSize()
+  const { data: session } = useSession(AppContext)
+
   React.useEffect(() => {
-    console.count('from canvas')
     let hold = false
     if (checkIfWinner) {
       setCheckIfWinner(false)
@@ -42,7 +48,6 @@ export default function Canvas({
       if (winner) {
         setWinnerMessage(winner)
         setWinnerFound(true)
-
         // otherwise continue the game
       } else {
         let allCellsSTaken = checkAllCellsTaken(boardElements)
@@ -53,7 +58,6 @@ export default function Canvas({
         }
       }
     }
-
     let timeout
     //if the user is against a computer and is the computers turn
     if (switchTurns && GAME_SETTINGS.PLAYER_VS_COMPUTER === modality && !hold) {
@@ -65,7 +69,8 @@ export default function Canvas({
           moveToTake.i !== undefined &&
           moveToTake.j !== undefined
         ) {
-          //append computer position
+          //append computer position and add to boardArray
+          let newItemForBoardArray
           setBoardElements((boardElements) => {
             boardElements[moveToTake.i][moveToTake.j] = switchTurns ? (
               <XComponent key={GAME_SETTINGS.X_USER} />
@@ -98,10 +103,19 @@ export default function Canvas({
   //listen to an update to the game from the other user
   React.useEffect(() => {
     if (modality === GAME_SETTINGS.ONLINE) {
-      socket.on('updateGame', ({ row, col }) => {
+      socket.on('updateGame', ({ row, col, opponent }) => {
+        setOpponent(opponent)
         setBoardElements((boardElements) => {
           boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
           return boardElements
+        })
+        setMemoizePositions((memoize) => {
+          memoize.push({
+            i: row,
+            j: col,
+            object: <OComponent key={GAME_SETTINGS.O_USER} />,
+          })
+          return memoize
         })
         setSwitchTurns(true)
         setCheckIfWinner(true)
@@ -115,7 +129,7 @@ export default function Canvas({
     if (modality === GAME_SETTINGS.ONLINE) {
       socket.on('onOtherUserLeaving', (flag) => {
         socket.emit('leaveRoom', { roomCode })
-        setWinnerMessage('The other user has left the game, you won!')
+        setWinnerMessage('The other user has left the game!')
         setWinnerFound(true)
       })
       return () => socket.off('onOtherUserLeaving')
@@ -142,8 +156,10 @@ export default function Canvas({
   const playerVsComputer = (row, col) => {
     if (switchTurns) return
     //append users position
+
     setBoardElements((boardElements) => {
       boardElements[row][col] = <OComponent key={GAME_SETTINGS.O_USER} />
+
       return boardElements
     })
 
@@ -162,6 +178,7 @@ export default function Canvas({
     //check who wins
     setCheckIfWinner(true)
   }
+
   const playerVsPlayer = (row, col) => {
     //append item to current cell selected
     setBoardElements((boardElements) => {
@@ -171,6 +188,14 @@ export default function Canvas({
         <OComponent key={GAME_SETTINGS.O_USER} />
       )
       return boardElements
+    })
+    setMemoizePositions((memoize) => {
+      memoize.push({
+        i: row,
+        j: col,
+        object: <XComponent key={GAME_SETTINGS.X_USER} />,
+      })
+      return memoize
     })
 
     //switch turns
@@ -185,10 +210,18 @@ export default function Canvas({
         boardElements[row][col] = <XComponent key={GAME_SETTINGS.X_USER} />
         return boardElements
       })
+      setMemoizePositions((memoize) => {
+        memoize.push({
+          i: row,
+          j: col,
+          object: <XComponent key={GAME_SETTINGS.X_USER} />,
+        })
+        return memoize
+      })
       setSwitchTurns(false)
       setCheckIfWinner(true)
       //emit the new changes to the dom to the user
-      socket.emit('play', { row, col, roomCode })
+      socket.emit('play', { row, col, roomCode, opponent: session.user23._id })
     }
   }
 
@@ -200,12 +233,16 @@ export default function Canvas({
     gameModality(row, col)
   }
 
-  let responsiveNess =
-    curWidth <= RESPONSIVE_LAYOUT.SM_SCREEN_WIDTH
-      ? { width: '110px', height: '170px' }
-      : curWidth >= RESPONSIVE_LAYOUT.LG_SCREEN_WIDTH
-      ? { width: '220px', height: '260px' }
-      : { width: '140px', height: '170px' }
+  let responsiveNess = React.useMemo(() => {
+    return curWidth <= RESPONSIVE_LAYOUT.XS_SCREEN_WIDTH
+      ? { width: '110px', height: '185px' }
+      : curWidth <= RESPONSIVE_LAYOUT.SM_SCREEN_WIDTH
+      ? { width: '130px', height: '190px' }
+      : curWidth >= RESPONSIVE_LAYOUT.XL_SCREEN_WIDTH
+      ? { width: '240px', height: '280px' }
+      : { width: '160px', height: '190px' }
+  }, [curWidth])
+
   return (
     <>
       {/*first row*/}
@@ -228,6 +265,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[0][0]}
@@ -255,6 +293,7 @@ export default function Canvas({
         >
           <br></br>
           <br></br>
+          <br></br>
           {boardElements[0][1]}
           <br></br>
           <br></br>
@@ -278,6 +317,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[0][2]}
@@ -308,6 +348,7 @@ export default function Canvas({
         >
           <br></br>
           <br></br>
+          <br></br>
           {boardElements[1][0]}
           <br></br>
           <br></br>
@@ -321,7 +362,6 @@ export default function Canvas({
           xl={3}
           sx={{ borderRight: 2, borderBottom: 2, borderColor: 'white' }}
           textAlign="center"
-          alignSelf={'center'}
           alignContent={'center'}
           alignItems={'center'}
           className={classes['canvas-style']}
@@ -334,6 +374,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[1][1]}
@@ -359,6 +400,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[1][2]}
@@ -389,6 +431,7 @@ export default function Canvas({
         >
           <br></br>
           <br></br>
+          <br></br>
           {boardElements[2][0]}
           <br></br>
           <br></br>
@@ -414,6 +457,7 @@ export default function Canvas({
         >
           <br></br>
           <br></br>
+          <br></br>
           {boardElements[2][1]}
           <br></br>
           <br></br>
@@ -436,6 +480,7 @@ export default function Canvas({
           minWidth={responsiveNess.width}
           minHeight={responsiveNess.height}
         >
+          <br></br>
           <br></br>
           <br></br>
           {boardElements[2][2]}

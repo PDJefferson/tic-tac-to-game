@@ -55,7 +55,6 @@ export default function GameDifficulty({ setDifficulty }) {
             align="center"
             color="text.secondary"
             variant="body2"
-            alignSelf={'center'}
             justifyItems={'center'}
             backgroundColor="white"
             paddingBottom={2}

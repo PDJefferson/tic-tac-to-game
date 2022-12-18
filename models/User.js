@@ -7,6 +7,10 @@ const Schema = mongoose.Schema
 
 const userSchema = new mongoose.Schema(
   {
+    data: {
+      type: [Schema.Types.ObjectId],
+      ref: 'Data',
+    },
     role: {
       type: String,
       default: 'app',
@@ -49,6 +53,21 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    wins: {
+      type: Number,
+      default: 0,
+      required: false,
+    },
+    loses: {
+      type: Number,
+      default: 0,
+      required: false,
+    },
+    ties: {
+      type: Number,
+      default: 0,
+      required: false,
+    },
   },
   {
     toJSON: { virtuals: true },
@@ -56,12 +75,5 @@ const userSchema = new mongoose.Schema(
   },
   { autoIndex: true }
 )
-
-userSchema.methods.correctPassword = async function (
-  candidatePassword,
-  userPassword
-) {
-  return await bcrypt.compare(candidatePassword, userPassword)
-}
 
 export default mongoose.models?.User || mongoose.model('User', userSchema)

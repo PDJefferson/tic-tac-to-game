@@ -8,4 +8,5 @@ export const GAME_SETTINGS = {
   ONLINE: 'online',
   X_USER: 'xUser',
   O_USER: 'oUser',
+  APPEND_ROOM: 'room',
 }

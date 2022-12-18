@@ -35,6 +35,7 @@ function DrawerAppBar() {
   const [whichRoute, setWhichRoute] = React.useState({
     home: false,
     game: false,
+    archive: false,
   })
 
   React.useEffect(() => {
@@ -43,11 +44,20 @@ function DrawerAppBar() {
         ...prevState,
         home: true,
         game: false,
+        archive: false,
       }))
     } else if (router.pathname === '/game') {
       setWhichRoute((prevState) => ({
         ...prevState,
         game: true,
+        home: false,
+        archive: false,
+      }))
+    } else if (router.pathname === '/archive') {
+      setWhichRoute((prevState) => ({
+        ...prevState,
+        archive: true,
+        game: false,
         home: false,
       }))
     } else {
@@ -55,6 +65,7 @@ function DrawerAppBar() {
         ...prevState,
         home: false,
         game: false,
+        archive: false,
       }))
     }
   }, [router])
@@ -72,18 +83,18 @@ function DrawerAppBar() {
 
   const navItems = [
     {
-      text: 'Home',
-      as: '/',
-      href: '/',
-      selected: whichRoute.home,
-      disabled: false,
-    },
-    {
       text: 'Tic Tac Toe',
       as: '/game',
       href: '/game',
       selected: whichRoute.game,
       disabled: false,
+    },
+    {
+      text: 'Archive',
+      as: '/archive',
+      href: '/archive',
+      selected: whichRoute.archive,
+      disabled: !session,
     },
   ]
 
@@ -159,7 +170,8 @@ function DrawerAppBar() {
           justifyContent: 'center',
         }}
       >
-        <Toolbar sx={{ marginRight: -1.3 }}>
+        {/*negative margin right causes the width to be bigger then full width previous value marginRight: -1.3*/}
+        <Toolbar sx={{ marginLeft: 1.3 }}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
