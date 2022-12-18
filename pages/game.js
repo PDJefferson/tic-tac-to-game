@@ -13,11 +13,17 @@ import LeaderBoard from '../components/leaderboard/LeaderBoard'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import useHttp from '../hooks/use-http'
-import { updateUser } from '../routes/api/users'
+import { saveData, getData5 } from '../routes/api/users'
+import History from '../components/History'
+import { getSession } from 'next-auth/react'
+import Data from '../models/Data'
+import { get } from 'mongoose'
 
-export default function Home() {
+export default function Home({ data }) {
+  const [again, setAgain] = React.useState(false)
   const [modality, setModality] = React.useState(null)
   const [difficulty, setDifficulty] = React.useState(null)
+  const [opponent, setOpponent] = React.useState('')
   const [turn, setTurn] = React.useState(false)
   const [canOnlineGameStart, setCanOnlineGameStart] = React.useState(false)
   const [roomName, setRoomName] = React.useState(null)
@@ -38,12 +44,70 @@ export default function Home() {
 
   const router = useRouter()
 
-  const {
-    sendRequest,
-    data: updatedData,
-    status,
-    error,
-  } = useHttp(updateUser, false)
+  React.useEffect(() => {
+    if (winnerFound) {
+      if (GAME_SETTINGS.PLAYER_VS_PLAYER === modality) {
+        return
+      }
+      let userWin = 'false'
+      if (GAME_SETTINGS.PLAYER_VS_COMPUTER === modality) {
+        if (winnerMessage === 'oUser') {
+          userWin = 'true'
+        } else if (winnerMessage === 'xUser') {
+          userWin = 'false'
+        } else {
+          userWin = 'tie'
+        }
+      } else if (GAME_SETTINGS.ONLINE === modality) {
+        if (winnerMessage === 'xUser') {
+          userWin = 'true'
+        } else if (winnerMessage === 'oUser') {
+          userWin = 'false'
+        } else {
+          userWin = 'tie'
+        }
+      }
+      let holdMemoizePositions = []
+      memoizePositions.map((e) => {
+        let inside = {
+          i: e.i,
+          j: e.j,
+          key: e.object.key,
+        }
+        holdMemoizePositions.push(inside)
+      })
+
+      let data
+      if (modality === GAME_SETTINGS.ONLINE) {
+        data = {
+          modality,
+          userWin,
+          holdMemoizePositions,
+          opponent,
+        }
+      }
+      if (modality === GAME_SETTINGS.PLAYER_VS_COMPUTER) {
+        data = {
+          modality,
+          userWin,
+          difficulty,
+          holdMemoizePositions,
+        }
+      }
+
+      if (session) {
+        saveData(data)
+      }
+      setOpponent('')
+    }
+  }, [winnerFound])
+
+  // const {
+  //   sendRequest,
+  //   data: updatedData,
+  //   status,
+  //   error,
+  // } = useHttp(updateUser, false)
 
   //if the user wants to play online then make him sign in
   if (!session && modality === GAME_SETTINGS.ONLINE) {
@@ -64,28 +128,7 @@ export default function Home() {
       : null
   }, [winnerMessage, modality])
 
-  //store the wins or loses
-  if (
-    session &&
-    winnerMessage &&
-    (winnerMessage === GAME_SETTINGS.X_USER ||
-      winnerMessage === GAME_SETTINGS.O_USER) &&
-    !hasUserBeenUpdated &&
-    GAME_SETTINGS.ONLINE === modality
-  ) {
-    let wins =
-      winnerMessage === GAME_SETTINGS.X_USER
-        ? session?.user23?.wins + 1
-        : session?.user23?.wins
-    let loses =
-      winnerMessage === GAME_SETTINGS.O_USER
-        ? session?.user23?.loses + 1
-        : session?.user23?.loses
-    sendRequest({ id: session.user23._id, wins, loses })
-    setHasUserBeenUpdated(true)
-  }
-
-  const resetGame = () => {
+  const resetGame = async () => {
     setWinnerFound(false)
     setWinnerMessage(null)
     if (roomName) {
@@ -187,10 +230,17 @@ export default function Home() {
             direction="row"
             alignItems="center"
             justifyContent="space-around"
+            sx={{ mt: 2, mb: 1 }}
           >
             {(hasGameBeenSetUp || GAME_SETTINGS.ONLINE === modality) && (
               <Grid container item direction="column" xs={1} md={1} sm={1}>
-                <Button onClick={(e) => resetGame()} variant="contained">
+                <Button
+                  onClick={(e) => {
+                    resetGame()
+                    setAgain(true)
+                  }}
+                  variant="contained"
+                >
                   return
                 </Button>
               </Grid>
@@ -261,6 +311,8 @@ export default function Home() {
                   setCurrentIndex={setCurrentIndex}
                   setSize={setSize}
                   setWinnerMessage={setWinnerMessage}
+                  opponent={opponent}
+                  setOpponent={setOpponent}
                 />
               )}
             </Grid>
@@ -301,7 +353,30 @@ export default function Home() {
             </Grid>
           </Grid>
         </Grid>
+        {session && !modality && (
+          <History data={data} again={again} setAgain={setAgain} />
+        )}
       </Grid>
     </>
   )
+}
+
+export async function getServerSideProps(context) {
+  const session = await getSession({ req: context.req })
+
+  if (session) {
+    const getData = await Data.find({ user: session.user23._id })
+      .sort({ dateUnix: -1 })
+      .limit(5)
+      .populate({
+        path: 'opponent',
+        select: 'name',
+      })
+
+    return { props: { data: JSON.stringify(getData) } }
+  }
+
+  return {
+    props: {},
+  }
 }

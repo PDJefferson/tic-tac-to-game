@@ -101,10 +101,11 @@ const SocketHandler = (req, res) => {
       })
 
       //play a move in the board
-      socket.on('play', ({ row, col, roomCode }) => {
-        console.log(`play at ${row} ${col} to ${roomCode}`)
+      socket.on('play', ({ row, col, roomCode, opponent }) => {
+        console.log('hi')
+        console.log(`play at ${row} ${col} to ${roomCode} vs ${opponent}`)
         //update the other user screen
-        socket.broadcast.to(roomCode).emit('updateGame', { row, col })
+        socket.broadcast.to(roomCode).emit('updateGame', { row, col, opponent })
         console.log(socket.adapter.rooms)
       })
 
