@@ -1,4 +1,4 @@
-const colors = ['#FFCA28', '#FFCA28', '#FFCA28']
+const colors = ['#FFCA28', '#FFCA28', '#FFCA28', '#FFCA28', '#7CB9E8']
 import { GAME_SETTINGS } from '../../constants/game'
 
 export async function saveData(data) {
