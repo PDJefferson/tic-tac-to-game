@@ -6,6 +6,7 @@ import { GAME_SETTINGS } from '../constants/game'
 export default function minimaxAlgo(currentCellTaken) {
   //getting a copy of the board to write on it
   const temporaryBoard = [...currentCellTaken]
+  
   let score = minimax(temporaryBoard, GAME_SETTINGS.X_USER)
   return { i: score.i, j: score.j }
 }
