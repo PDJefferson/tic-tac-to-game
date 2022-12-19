@@ -69,7 +69,11 @@ function RoomLobby({ socket, startGame, resetGame, session }) {
   //listens to this socket event which will trigger whenever
   //a room has two users to start playing
   React.useEffect(() => {
-    socket?.on('startGame', async ({ roomCode, user }) => {
+    socket?.on('startGame', ({ roomCode, user, run }) => {
+      
+      if(run){
+        socket.emit('startGameLastUser', {roomCode, user: session.user23})
+      }
       setShowStats({ roomCode, user })
     })
     return () => socket.off('startGame')

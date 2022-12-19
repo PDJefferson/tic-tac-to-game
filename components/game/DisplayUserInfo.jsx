@@ -33,7 +33,7 @@ function DisplayUserInfo({
           justifyContent="center"
           spacing={8}
         >
-          <Grid item sx={4} direction="col" marginTop={5}>
+          <Grid item  marginTop={5}>
             <Typography
               sx={{ fontSize: 18 }}
               color="white"
@@ -43,9 +43,9 @@ function DisplayUserInfo({
               YOU ARE PLAYING AGAINST:
             </Typography>
           </Grid>
-          <Grid container item sx={4}>
+          <Grid container item >
             <Grid container direction="row" justifyContent="center" spacing={3}>
-              <Grid item sx={2} alignSelf="center">
+              <Grid item  alignSelf="center">
                 <Avatar
                   src={currPlayer.image}
                   width="45px"
@@ -54,7 +54,7 @@ function DisplayUserInfo({
                   loading="lazy"
                 />
               </Grid>
-              <Grid item sx={2} alignSelf="center">
+              <Grid item alignSelf="center">
                 <Typography
                   variant="body1"
                   color="white"
@@ -65,7 +65,7 @@ function DisplayUserInfo({
                 </Typography>
               </Grid>
 
-              <Grid item sx={2} alignSelf="center">
+              <Grid item  alignSelf="center">
                 <Typography
                   variant="body1"
                   color="white"
@@ -75,7 +75,7 @@ function DisplayUserInfo({
                   VS.
                 </Typography>
               </Grid>
-              <Grid item sx={2} alignSelf="center">
+              <Grid item  alignSelf="center">
                 <Avatar
                   src={adversary.image}
                   width="45px"
@@ -84,7 +84,7 @@ function DisplayUserInfo({
                   loading="lazy"
                 />
               </Grid>
-              <Grid item sx={2} alignSelf="center">
+              <Grid item alignSelf="center">
                 <Typography
                   variant="body1"
                   color="white"
@@ -96,7 +96,7 @@ function DisplayUserInfo({
               </Grid>
             </Grid>
           </Grid>
-          <Grid item sx={4}>
+          <Grid item >
             <Typography
               sx={{ fontSize: 18 }}
               color="white"

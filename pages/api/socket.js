@@ -1,6 +1,7 @@
 import { Server } from 'socket.io'
 import { GAME_SETTINGS } from '../../constants/game'
-let usersJoined = new Map()
+const usersJoined = new Map()
+
 const SocketHandler = (req, res) => {
   if (res.socket.server.io) {
     console.log('socket has already been initialized')
@@ -14,6 +15,7 @@ const SocketHandler = (req, res) => {
     io.on('connection', (socket) => {
       //check if a user has join a room
       socket.on('joinRoom', async ({ roomCode, user }) => {
+        console.log(usersJoined.get(roomCode), 'check')
         //get the users in this specific room
         const connectedSockets = io.sockets.adapter.rooms.get(roomCode)
         //get all rooms
@@ -32,11 +34,9 @@ const SocketHandler = (req, res) => {
         } else {
           //if the same user is trying to join the room
           //then make the user leave the room
-          if (
-            usersJoined.size > 0 &&
-            usersJoined.hasOwnProperty(roomCode) &&
-            usersJoined.get(roomCode)[0].user._id === user._id
-          ) {
+          if (usersJoined.get(roomCode) > 0 &&
+            usersJoined.get(roomCode)[0].user._id === user._id) {
+            console.log('email match so show the message')
             socket.to(roomCode).emit('isSameUser', {
               message: 'Cannot play against yourself',
             })
@@ -51,41 +51,53 @@ const SocketHandler = (req, res) => {
             socket.emit('listRooms', { roomsAvailable })
             //remove the users data
             usersJoined.delete(roomCode)
-            return
-          }
-          //check if there are no users that joined this specific room
-          //to memoize the current user
-          if (usersJoined.hasOwnProperty(roomCode) === false) {
-            console.count(Array.from(usersJoined.keys()), 'check')
-            let userList = new Array()
-            userList.push({ user: user, socket: socket })
-            usersJoined.set(roomCode, userList)
-          }
-          console.log('joining user to room:', roomCode)
-          await socket.join(roomCode)
-
-          //if the room has two users, then start the game
-          if (io.sockets.adapter.rooms.get(roomCode)?.size === 2) {
-            console.log(
-              usersJoined.get(roomCode)[0].user.name,
-              ' vs ',
-              user.name
-            )
-            console.log('room where the game is being hosted is', roomCode)
-            //send this message to everyone
-            socket.emit('listRooms', { roomsAvailable })
-            //update the last user who joined
-            socket.emit('startGame', {
-              roomCode,
-              user: usersJoined.get(roomCode)[0].user,
-            })
-
-            //add the other user to room
-            usersJoined.get(roomCode).push({ user: user, socket: socket })
-            //send the info of the last user who joined the room to the user who hosted
-            socket.broadcast.to(roomCode).emit('startGame', { roomCode, user })
+          } else {
+            console.log('joining user to room:', roomCode)
+            await socket.join(roomCode)
+            //check if there are no users that joined this specific room
+            //to memoize the current user
+            if (
+              roomCode in usersJoined === false &&
+              usersJoined.get(roomCode) === undefined
+            ) {
+              console.log(
+                Array.from(usersJoined.keys()),
+                'setting a new room' + roomCode + (roomCode in usersJoined),
+                user.name
+              )
+              let userList = new Array()
+              userList.push({ user: user, socket: socket })
+              usersJoined.set(roomCode, userList)
+            }
+            console.error(usersJoined.get(roomCode))
+            //if the room has two users, then start the game
+            if (io.sockets.adapter.rooms.get(roomCode)?.size === 2) {
+              console.log('room where the game is being hosted is', roomCode)
+              //send this message to everyone
+              socket.emit('listRooms', { roomsAvailable })
+              const hostedUser = usersJoined.get(roomCode)[0]
+              // Store the data for both users in the map
+              usersJoined.set(roomCode, [
+                {
+                  user: hostedUser.user,
+                  socket: hostedUser.socket,
+                },
+                { user: user, socket: socket },
+              ])
+              //send the info of the last user who joined the room to the user who hosted
+              socket.broadcast
+                .to(roomCode)
+                .emit('startGame', { roomCode, user, run: true })
+            }
           }
         }
+      })
+
+      //starts the game to the last user who joined
+      socket.on('startGameLastUser', ({ roomCode, user }) => {
+        socket.broadcast
+          .to(roomCode)
+          .emit('startGame', { roomCode, user, run: false })
       })
 
       socket.on('getRooms', () => {
@@ -94,6 +106,7 @@ const SocketHandler = (req, res) => {
         //emit message to all connected sockets with the rooms available
         socket.emit('listRooms', { roomsAvailable })
       })
+
       //listens to leave room which gets trigger when a user leaves a specific room
       socket.on('leaveRoom', ({ roomCode }) => {
         console.log('user has left room', roomCode)
