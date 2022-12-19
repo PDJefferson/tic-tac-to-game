@@ -2,34 +2,8 @@ import React from 'react'
 import { CardContent, Typography, Grid, Box, Avatar } from '@mui/material'
 import { getAllUsers } from '../../routes/api/users'
 import useHttp from '../../hooks/use-http'
-//temp var
-const showLeaderBoard = [
-  {
-    id: 'random1',
-    color: 'yellow',
-    user: 1,
-    name: 'Iman',
-    img: 'https://cdn2.thecatapi.com/images/MjAyMTUwNA.jpg',
-    wins: 2019,
-  },
-  {
-    id: 'random2',
-    color: 'yellow',
-    user: 2,
-    name: 'Jaysee',
-    img: 'https://cdn2.thecatapi.com/images/1.jpg',
-    wins: 30,
-  },
-  {
-    id: 'random3',
-    color: 'orange',
-    user: 3,
-    name: 'Jonathan',
-    img: 'https://cdn2.thecatapi.com/images/2.jpg',
-    wins: 10,
-  },
-]
-export default function LeaderBoardList({ passedList = [] }) {
+
+export default function LeaderBoardList() {
   const {
     sendRequest,
     status,
@@ -142,39 +116,6 @@ export default function LeaderBoardList({ passedList = [] }) {
             </Box>
           </Grid>
         ))}
-        <Grid
-          container
-          item
-          spacing={0}
-          xs={10}
-          md={10}
-          direction="row"
-          justifyContent={'center'}
-        >
-          <Box
-            elevation={3}
-            marginBottom={2}
-            justifyContent="center"
-            textAlign="center"
-            sx={{
-              minWidth: '278px',
-              width: '380px',
-              height: '80px',
-              borderRadius: 5,
-              background: `#58ABBD`,
-            }}
-          >
-            <Typography
-              variant="h5"
-              alignSelf={'center'}
-              color="#312244"
-              marginTop={3.5}
-              sx={{ fontWeight: 'bold', fontSize: '16.2624px' }}
-            >
-              Load More
-            </Typography>
-          </Box>
-        </Grid>
       </>
     )
   }
