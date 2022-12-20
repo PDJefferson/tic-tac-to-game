@@ -29,6 +29,7 @@ export default function Archive({ data }) {
       direction="column"
       justifyContent="center"
       alignItems="center"
+      minHeight="92vh"
       sx={{ backgroundColor: 'black' }}
     >
       <Grid
@@ -36,9 +37,10 @@ export default function Archive({ data }) {
         direction="row"
         justifyContent="flex-start"
         alignItems="center"
-        sx={{ ml: 10, mt: 2 }}
+        sx={{ mt: 2, mr: 2 }}
       >
         <IconButton
+          sx={{ ml: 5 }}
           onClick={() => {
             router.push({
               pathname: '/game',
