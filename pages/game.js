@@ -39,7 +39,7 @@ export default function Home({ data }) {
   //getting the current user who has been authenticated
   const { data: session } = useSession(AppContext)
   const router = useRouter()
-
+  
   React.useEffect(() => {
     if (winnerFound) {
       if (GAME_SETTINGS.PLAYER_VS_PLAYER === modality) {
